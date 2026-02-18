@@ -134,4 +134,17 @@ dmypy.json
 
 # Ignore beads
 .beads/
-AGENTS.md
+
+# Trained model files (keep original models in model/)
+model/*_new.h5
+model/*_retrain.h5
+model/*_tuned.h5
+model/*_v2.h5
+
+# Test prediction images
+fig/*_pred.png
+fig/*_tuned_pred.png
+fig/*_v2_pred.png
+
+# Claude Code settings
+.claude/
