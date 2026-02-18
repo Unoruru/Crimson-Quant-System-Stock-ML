@@ -45,12 +45,6 @@ def lstm_stock_model_with_sentiment(df_model, historical_start_date,  historical
     x_train, y_train, x_test, y_test = stock_model.train_test_split(scaled_data, arrdata, train_len, 20)
     print('Shape of x test:', x_test.shape)
 
-    '''
-    model3 = stockmodel.model_architecture_2dim(x_train)
-    history = stockmodel.model_fitting(model3, x_train, y_train, 'model/model3.h5')
-    stockmodel.training_loss_viz(history)
-    '''
-
     # Load or create the model
     model = load_model(loaded_model)  # Update the path as needed
 

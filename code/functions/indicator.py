@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from statsmodels.tsa.stattools import adfuller
-from statsmodels.tsa.arima_model import ARIMA
 import statsmodels.api as sm
 
 def monthly_return_calculation(df_mr):
@@ -99,6 +98,7 @@ def seasonality_adjustment(stock_data, res, year):
 
 # Financial Indicator (on-balance volume)
 def OBV_calculation(df, span=20):
+    df = df.copy()
 
     # Calculate daily price changes
     df['Price Change'] = df['Close'].diff()

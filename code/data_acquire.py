@@ -47,7 +47,7 @@ def combine_news_data():
 
     all_data = pd.concat([FT_data, NYT_data])
     all_data.loc[:, 'Date'] = pd.to_datetime(all_data['Date'], format='%Y-%m-%d')
-    all_data.drop_duplicates(['Headline'], keep='last')
+    all_data = all_data.drop_duplicates(['Headline'], keep='last')
     all_data.to_csv('../data/'+query_list[0]+'_News_All.csv')
 
 # This function return the organized news data with sentiment scores
@@ -74,11 +74,11 @@ def final_data():
     data['Date'] = data['Date'].astype(str).str.split('T').str[0]
 
     #Set NaN values for Sentiment to be the Mean
-    data['compound'].fillna(data['compound'].mean(), inplace=True)
-    data['negative'].fillna(data['negative'].mean(), inplace=True)
-    data['neutral'].fillna(data['neutral'].mean(), inplace=True)
-    data['positive'].fillna(data['positive'].mean(), inplace=True)
+    data['compound'] = data['compound'].fillna(data['compound'].mean())
+    data['negative'] = data['negative'].fillna(data['negative'].mean())
+    data['neutral'] = data['neutral'].fillna(data['neutral'].mean())
+    data['positive'] = data['positive'].fillna(data['positive'].mean())
 
     #drop null values if any
-    data.dropna(axis=0, inplace=True)
+    data = data.dropna(axis=0)
     return data

@@ -5,14 +5,14 @@ import datetime
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import os
 import time
 # This page contains functions of stock data and news data acquisition through API
 
 
 # Stock data gathering -through IEX cloud api
 def acquire_data(ticker, start_date, end_date):
-    ticker = 'AAPL'
-    api_key = 'pk_a2b42a419878499e9740457333423a9b'
+    api_key = os.environ.get("IEX_CLOUD_API_KEY", "")
     url = f'https://api.iex.cloud/v1/data/core/historical_prices/{ticker}?range=5y&token={api_key}'
     request = requests.get(url)
     request.raise_for_status()
@@ -54,7 +54,7 @@ def access_api(query, page, start_date, end_date):
     time.sleep(1)
     
     #Define the NYTimes Scraping URL
-    nyt_key = 'GU1Ibqs6Efe6nZePhZa02MJ96ZyrJHmk'
+    nyt_key = os.environ.get("NYT_API_KEY", "")
     URL = 'http://api.nytimes.com/svc/search/v2/articlesearch.json?q='+query+'&sort=relevance&fq='+query+'&page='+str(page)+'&api-key='+nyt_key+'&begin_date='+start_date.strftime("%Y%m%d")+'&end_date='+end_date.strftime("%Y%m%d")
     
     raw_html = None
@@ -62,7 +62,7 @@ def access_api(query, page, start_date, end_date):
     i = 0
     
     #Attempt to Request page 3 times without getting any errors.
-    while i<3 and (content is None or raw_html.status_code!=200):
+    while i < 3 and (content is None or raw_html.status_code != 200):
         try:
             raw_html = requests.get(URL)
             data = json.loads(raw_html.content.decode("utf-8"))
@@ -70,7 +70,7 @@ def access_api(query, page, start_date, end_date):
         except ValueError:
             raise ValueError
         except KeyError:
-            continue
+            pass
         i += 1
     
     #Return the page content
@@ -91,8 +91,8 @@ def fetch_news_NYT(Interval, query_list, Datelist, filter_words):
             
             # Fetch content from API and store in the lists
             Data = access_api(query, page, Datelist[i-1], Datelist[i])
-            while Data["meta"]["hits"] > 1000:
-                Data = access_api(query, page, Datelist[i-1], Datelist[i])
+            if Data is None or Data["meta"]["hits"] > 1000:
+                continue
             while page * 10 < Data["meta"]["hits"] and (page + 1) < 100:
                 Data = access_api(query, page, Datelist[i-1], Datelist[i])
                 for doc in Data["docs"]:
@@ -114,7 +114,7 @@ def fetch_news_NYT(Interval, query_list, Datelist, filter_words):
     
     # Extract the dataframe to a CSV file
     #PD_Headers.to_csv('../data/' + query_list[0] + '_News_NYTimes.csv', index=False)
-    PD_Headers.to_csv('../../../data'+ query_list[0] + '_News_NYTimes.csv', index=False)
+    PD_Headers.to_csv('../../../data/' + query_list[0] + '_News_NYTimes.csv', index=False)
 
 
 # Financial Times Data Gathering

@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import os
 
-from code.functions.preprocessing import missing_value_handling, oulier_detection
+from code.functions.preprocessing import missing_value_handling, outlier_detection
 from code.functions.model_training import LSTMStockModel
 from code.model import lstm_stock_model, lstm_stock_model_with_sentiment, train_cnn_lstm_model, train_cnn_lstm_model_with_sentiment
 
@@ -27,7 +27,7 @@ def main():
     # Download data
     df = download_stock_data()
     data = missing_value_handling(df)
-    oulier_detection(data)
+    outlier_detection(data)
     df_model = data[['Date', 'Close', 'Volume', 'compound']].copy()
 
     print(f"Data: {df_model.shape[0]} rows, {df_model['Date'].min()} to {df_model['Date'].max()}")

@@ -71,12 +71,20 @@ AAPL stock price prediction using LSTM and CNN-LSTM hybrid neural networks combi
 
 Five `.h5` Keras models in `model/` (3 pure-LSTM, 2 CNN-LSTM hybrid). The pipeline loads these for inference; training code exists in `LSTMStockModel` class but is commented out in `model.py`.
 
-## Known Code Issues
+## Known Code Issues (Resolved 2026-02-18)
 
-- **Hardcoded credentials:** MongoDB URI in `storage.py`, IEX API key and NYT API key in `api_requests.py`
-- **`NotImplementedError`:** `main.py:138` raises at end of `main()` (likely a development placeholder)
-- **Typo:** `oulier_detection` in `preprocessing.py` (missing 't' in "outlier")
-- **Relative path inconsistency:** CSV save paths in `api_requests.py` use `../../../data` which may break depending on working directory
+The following issues were identified and fixed in the integrity audit:
+
+- ~~**Hardcoded credentials:** MongoDB URI, IEX API key, NYT API key~~ -> Moved to env vars
+- ~~**Typo:** `oulier_detection`~~ -> Renamed to `outlier_detection`
+- ~~**Missing `__init__.py`** in `code/functions/` and `code/functions/data_gathering_and_storage/`~~ -> Created
+- ~~**Broken import:** `statsmodels.tsa.arima_model` (removed in 0.13)~~ -> Removed unused import
+- ~~**Silent bugs:** discarded `sort_values()` and `drop_duplicates()` results~~ -> Assigned back
+- ~~**Infinite loop:** KeyError in NYT retry loop skipped increment~~ -> Fixed
+- ~~**4x redundant sentiment scoring**~~ -> Single `polarity_scores()` call, unpack values
+- ~~**Figure memory leaks**~~ -> Added `plt.close()` after `savefig()`
+- ~~**REST API:** No input validation~~ -> Added schema validation and ObjectId checks
+- **Relative path inconsistency:** CSV save paths in `api_requests.py` use `../../../data/` which may break depending on working directory
 
 ## Recent Changes (2026-02-18)
 

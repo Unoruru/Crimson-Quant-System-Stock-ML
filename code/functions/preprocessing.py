@@ -11,7 +11,7 @@ def interpolate_missing_dates(df):
     if not interpolated_df.empty:
         interpolated_df = interpolated_df.reset_index().rename(columns={'index': 'Date'})
 
-    interpolated_df.sort_values(by='Date', ascending = True).reset_index(drop = True)
+    interpolated_df = interpolated_df.sort_values(by='Date', ascending=True).reset_index(drop=True)
 
     return interpolated_df
 
@@ -29,7 +29,7 @@ def zscore_outliers(x, threshold): #x: arraylike set
     outlier_indices = np.where(np.abs(z_scores) > threshold)[0]
     return outlier_indices.tolist()
 
-def oulier_detection(data):
+def outlier_detection(data):
     #check the outliers of close stock
     outlier_idx1 = zscore_outliers(data['Close'], 3)
     if outlier_idx1 == []: 

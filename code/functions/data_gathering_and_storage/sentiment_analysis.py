@@ -19,16 +19,17 @@ def preprocess_news_data():
 def sentiment_score_calculation(news_data):
     sid = SentimentIntensityAnalyzer()
 
-    news_data['compound'] = news_data['Headline'].apply(lambda x: sid.polarity_scores(x)['compound'])
-    news_data['negative'] = news_data['Headline'].apply(lambda x: sid.polarity_scores(x)['neg'])
-    news_data['neutral'] = news_data['Headline'].apply(lambda x: sid.polarity_scores(x)['neu'])
-    news_data['positive'] = news_data['Headline'].apply(lambda x: sid.polarity_scores(x)['pos'])
+    scores = news_data['Headline'].apply(lambda x: sid.polarity_scores(x))
+    news_data['compound'] = scores.apply(lambda x: x['compound'])
+    news_data['negative'] = scores.apply(lambda x: x['neg'])
+    news_data['neutral'] = scores.apply(lambda x: x['neu'])
+    news_data['positive'] = scores.apply(lambda x: x['pos'])
 
     return news_data
 
 def aggregate_same_day_news(news_data):
     news_with_sentiment = news_data.groupby('Date').agg({
-        'Headline': ''.join,
+        'Headline': ' '.join,
         'compound': 'mean',
         'negative': 'mean',
         'neutral': 'mean',

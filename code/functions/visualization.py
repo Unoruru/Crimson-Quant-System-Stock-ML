@@ -5,12 +5,12 @@ import seaborn as sns
 colorB = '#03608c'
 colorR = '#9f1f31'
 
-def shaded_area_plot(x, mean, min, max, title, x_label, y_label):
+def shaded_area_plot(x, mean, low, high, title, x_label, y_label):
     fig, ax = plt.subplots(1, figsize=(16, 8))
     ax.plot(x, mean, label='Adjusted Close Value',color = colorB)
-    
+
     # Fill the shaded area
-    ax.fill_between(x, min, max, alpha=0.3, label='Day Range')
+    ax.fill_between(x, low, high, alpha=0.3, label='Day Range')
 
     ax.set_title(title)
     ax.set_xlabel(x_label)

@@ -2,18 +2,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-import seaborn as sns
-import matplotlib.patches as mpatches
 
 from keras.models import Sequential, load_model
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import Dropout
-from keras.layers import *
+from keras.layers import Dense, LSTM, Dropout, Conv1D, BatchNormalization, MaxPooling1D
 from keras.callbacks import EarlyStopping
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.metrics import mean_squared_error
-from sklearn.metrics import mean_absolute_error
 
 class LSTMStockModel():
     def __init__(self) -> None:
@@ -180,8 +173,8 @@ class LSTMStockModel():
 
         # extract train and valid data
         df.index = pd.to_datetime(df.index)
-        train = df[:train_len]
-        valid = df[train_len:]
+        train = df[:train_len].copy()
+        valid = df[train_len:].copy()
         valid['Predictions'] = predictions
         
         return predictions, train, valid, rmse 
@@ -196,6 +189,7 @@ class LSTMStockModel():
         ax.set_ylabel('MSE Loss')
         plt.legend()
         plt.savefig('fig/model training/5.1 trainingloss1.png')
+        plt.close(fig)
         return fig, ax
     
     def prediction_viz(self, train, valid, predictions, savepath):
@@ -214,9 +208,8 @@ class LSTMStockModel():
         plt.xlabel('Date')
         plt.ylabel('Close Price USD ($)')
         plt.savefig(savepath)
-        
+        plt.close()
 
-    
 
 
 

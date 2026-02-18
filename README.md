@@ -3,8 +3,27 @@
 ### Description
 This project combines deep learning techniques, sentiment analysis and financial indicators to realize AAPL stock analysis and prediction. It uses both pure LSTM and CNN-LSTM hybrid architectures for time-series forecasting. It contains the following sections: using API requests for data acquisition, using MongoDB Altas for data storage, using Flask local-based API for CRUD functions, using visualization tools and ARIMA for data exploration, using ntlk for sentiment analysis, using LSTM and CNN-LSTM for model training and data forecasting.
 
+### Setup / Installation
+
+**Prerequisites:** Python 3.10+, pip
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Configure environment variables
+cp .env.example .env
+# Edit .env and fill in your credentials:
+#   MONGODB_URI          – MongoDB Atlas connection string
+#   IEX_CLOUD_API_KEY    – IEX Cloud stock data API key
+#   NYT_API_KEY          – New York Times API key
+#   MONGO_DB_CONN_STRING – MongoDB connection string (used by REST API server)
+```
+
+> **Note:** API keys are loaded from environment variables — do **not** hard-code credentials in source files.
+
 ##### Notes
-- `StockModel()` is a class in model.py with 2 integrated LSTM models in 1 dimension and 2 dimensions training process respectively.
+- `LSTMStockModel()` is a class in model.py with 2 integrated LSTM models in 1 dimension and 2 dimensions training process respectively.
 - `data processing.ipynb` is an assistance to show the whole EDA process
 - `News Headlines ` are scarping from New York Times and Financial Times takes almost `2 hours` respectively, don't recommend to run.
 -  Model Training process also takes time, for code cleanness I stored the trained model under file model/:
@@ -13,13 +32,15 @@ This project combines deep learning techniques, sentiment analysis and financial
       - model 3: LSTM trained by historical close price and predicted sentiment scores from 2021-01-01 to 2023-03-31
       - model 4: CNN-LSTM trained by historical close price from 2021-01-01 to 2023-03-31
       - model 5: CNN-LSTM trained by historical close price and sentiment scores from 2021-01-01 to 2023-03-31
-- Stock API is from `IEX cloud`, the API might be expired when you test the data, so I just show the extraction from Database in main.py. If you want to test the Stock API, get the key from here-> https://iexcloud.io/ and replace the api_key in the acquire_data function from code/data_gathering_and_storage/api_requests.py
-- REST API to realize GRUD functions can be run through rest-api-server/app.py, related guidance is in the readme.md under rest-api-server file.
+- Stock API is from `IEX cloud`. The API key might be expired when you test — set `IEX_CLOUD_API_KEY` in your `.env` file. Get a key from https://iexcloud.io/
+- REST API for CRUD functions can be run through rest-api-server/app.py (requires `MONGO_DB_CONN_STRING` in `.env`). Related guidance is in the readme.md under rest-api-server/.
 
 ### File structure
 ```
 - README.md
 - AGENTS.md
+- .env.example
+- .gitignore
 - main.py
 - requirements.txt
 - environment.yml
@@ -28,7 +49,9 @@ This project combines deep learning techniques, sentiment analysis and financial
     - data_acquire.py
     - model.py
     - functions/
+        - __init__.py
         - data_gathering_and_storage/
+            - __init__.py
             - api_requests.py
             - sentiment_analysis.py
             - storage.py
