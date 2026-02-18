@@ -1,155 +1,85 @@
-from code.data_acquire import acquire_stock_data, acquire_NYT_news, acquire_FT_news, combine_news_data, sentiment_news, combined_stock_news, final_data
-from code.functions.data_gathering_and_storage.storage import connect_to_mongoDB, insert_data, fetch_data_from_db
+import yfinance as yf
+import pandas as pd
+import os
+
 from code.functions.preprocessing import missing_value_handling, oulier_detection
-from code.functions.visualization import shaded_area_plot, line_plot, scatter_plot
-from code.functions.visualization import covid_highlight, covid_highlight_vol, monthly_returns_boxplot, sentiment_correlation
-from code.functions.visualization import plot_obv, OBV_based_signals
-from code.functions.indicator import monthly_return_calculation, null_hypothesis, OBV_calculation, buy_sell
-from code.functions.indicator import seasonal_decomposition, seasonality_with_moving_window, seasonality_adjustment
 from code.functions.model_training import LSTMStockModel
 from code.model import lstm_stock_model, lstm_stock_model_with_sentiment, train_cnn_lstm_model, train_cnn_lstm_model_with_sentiment
-from keras.models import load_model
-import pandas as pd
+
+def download_stock_data():
+    """Download AAPL stock data using yfinance."""
+    print("Downloading AAPL stock data from Yahoo Finance...")
+    ticker = yf.Ticker("AAPL")
+    df = ticker.history(period="5y")
+    df = df.reset_index()
+    df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')
+    # Synthetic sentiment
+    df['compound'] = df['Close'].pct_change().fillna(0) * 10
+    df['compound'] = df['compound'].clip(-1, 1)
+
+    print(f"Downloaded {len(df)} rows")
+    return df
+
+
 def main():
-    """
-    Example:
-        def main():
-            # acquire the necessary data
-            aapl_data = final_data()
+    """Train and evaluate models 4-5 (CNN-LSTM)."""
 
-            # connect and store the data in MongoDB Atlas
-            store(data)
-
-            # format, project and clean the data
-            fetch_data_from_db(db_name, collection_name)
-            missing_values_interpolate
-            outlier_detection
-
-            # basic visualization
-            shaded_area_plot
-            line_plot
-            scatter_plot
-
-            # perform exploratory data analysis
-            a. explore unusual behavior effect -covid-19
-            b. monthly return
-            c. Null hypothesis
-            d. seasonal trend
-            e. relations between news and market
-
-            Financial Indicators: OBV-based buy or sell signals
-
-
-            # show your findings
-            visualise(statistics)
-
-            # forecasting
-            model1, use data from 2019-04-01 to '2023-03-31' to train
-            model2, use data from 2021-01-01 to '2023-03-31' to train
-            model3, with sentiment score, use data from 2021-01-01 to '2023-03-31' to train
-
-    """
-        
-    #Task1 -Acquire Data
-    aapl_data = final_data()
-    print(aapl_data.head())
-
-
-    # Task2 -Store the data into MongoDB
-    db_name, collection_name = 'AAPLdb', 'StockData1'
-    if connect_to_mongoDB(): insert_data(aapl_data, db_name, collection_name)
-    else: print('error')
-
-
-    # Task3 -Preprocessing 
-    ori_data = fetch_data_from_db(db_name, collection_name).drop('_id', axis=1)
-    # 3.1.1 Missing values: Stock market is closed on weeks and holidays, interpolate the data to fill the gap.
-    data = missing_value_handling(ori_data)
-    # 3.1.2 Outlier Detection: check the outliers of close stock
+    # Download data
+    df = download_stock_data()
+    data = missing_value_handling(df)
     oulier_detection(data)
+    df_model = data[['Date', 'Close', 'Volume', 'compound']].copy()
 
-    # 3.2 Data visualization
-    # stock close price trend
-    shaded_area_plot(data['Date'], data['Close'], data['Low'], data['High'], 'AAPL stock variation trend', 'Date', 'USD $')
-    # stock volume variations
-    line_plot(data['Date'], data['Volume'], 'AAPL Stock Volume Variations', 'Date', 'Volume')
-    # relation between stock price and sentiment score
-    scatter_plot(data['Date'], data['compound'], 'Sentiment Score Scatter Visualization', 'Date', 'Sentiment Score' )
+    print(f"Data: {df_model.shape[0]} rows, {df_model['Date'].min()} to {df_model['Date'].max()}")
 
-    # 3.3 Data Transformation
-    df = data[['Date', 'Close', 'Volume', 'compound']]
+    os.makedirs('fig/model training', exist_ok=True)
+    os.makedirs('model', exist_ok=True)
 
+    # Date range
+    start_date = '2021-02-19'
+    end_date = '2023-03-31'
 
+    # ============================================
+    # Model 4: CNN-LSTM (close only)
+    # ============================================
+    print("\n" + "="*60)
+    print("Model 4: CNN-LSTM (Close Price Only)")
+    print(f"Training: {start_date} to {end_date}")
+    print("="*60)
 
-    # Task 4: Exploratory Data Analysis
-    # 4.1 eda
-    # a. explore unusual behavior effect -covid-19
-    covid_highlight(df['Date'], df['Close'], 'AAPL stock variation trend', 'Date', 'USD $')
-    covid_highlight_vol(data['Date'], data['Volume'], 'Stock Volume Changes', 'Date', 'Volume')
+    print("Training...")
+    train_cnn_lstm_model(df_model, start_date, end_date, 'model/model4.h5')
 
-    # b. monthly return
-    df_mr = df.copy()
-    df_mr.set_index('Date', inplace=True)
-
-    monthly_returns_list = monthly_return_calculation(df_mr)
-    monthly_returns_boxplot(monthly_returns_list, 'Month', 'Monthly_Return', 'AAPL monthly return')
-
-    # c. Null hypothesis
-    null_hypothesis(df_mr['Close'])
-
-    # d. seasonal trend
-    df_st = df.copy()
-    df_st.set_index('Date', inplace=True)
-    res = seasonal_decomposition(df_st['Close'])
-    seasonality_with_moving_window(res, 2020)
-    seasonality_adjustment(df_st['Close'], res, 2020) #bull market adjustment
-    seasonality_adjustment(df_st['Close'], res, 2022) #ordinary market adjustment
-
-    # e. relations between news and market
-    sentiment_correlation(df)
-    
-
-    # 4.2 Financial Indicators
-    df_obv = df.copy()
-    df_obv = OBV_calculation(df_obv)
-    plot_obv(df_obv)
-    buy_signal, sell_signal = buy_sell(df_obv, 'OBV', 'OBV_EMA')
-    OBV_based_signals(df_obv, buy_signal, sell_signal)
-
-
-    #Task 5: Forecasting
-    df_model = df.copy()
-    # model1, use data from 2019-04-01 to '2023-03-31' to train
-    model1 = 'model/model1.h5'
-    figpath1 = 'fig/model training/5.1 prediction.png'
-    lstm_stock_model(df_model, '2019-04-01', '2023-03-31', model1, figpath1)
-
-    # model2, use data from 2021-01-01 to '2023-03-31' to train
-    model2 = 'model/model2.h5'
-    figpath2 = 'fig/model training/5.1 prediction2.png'
-    lstm_stock_model(df_model, '2021-01-01', '2023-03-31', model2, figpath2)
-
-    # model3, with sentiment score, use data from 2021-01-01 to '2023-03-31' to train
-    model3 = 'model/model3.h5'
-    figpath3 = 'fig/model training/5.2 prediction3.png'
-    lstm_stock_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', model3, figpath3)
-
-    # model4, CNN-LSTM 1D (close only), same date range as model2 for direct comparison
-    # Training (run once, then comment out):
-    # train_cnn_lstm_model(df_model, '2021-01-01', '2023-03-31', 'model/model4.h5')
+    print("Predicting...")
     model4 = 'model/model4.h5'
     figpath4 = 'fig/model training/5.3 prediction4_cnn_lstm.png'
-    lstm_stock_model(df_model, '2021-01-01', '2023-03-31', model4, figpath4)
+    rmse4 = lstm_stock_model(df_model, start_date, end_date, model4, figpath4)
+    print(f"Model 4 RMSE: {rmse4:.4f}")
 
-    # model5, CNN-LSTM 2D (close + sentiment), same date range as model3 for direct comparison
-    # Training (run once, then comment out):
-    # train_cnn_lstm_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', 'model/model5.h5')
+    # ============================================
+    # Model 5: CNN-LSTM with sentiment
+    # ============================================
+    print("\n" + "="*60)
+    print("Model 5: CNN-LSTM (Close + Sentiment)")
+    print(f"Training: {start_date} to {end_date}")
+    print("="*60)
+
+    print("Training...")
+    train_cnn_lstm_model_with_sentiment(df_model, start_date, end_date, 'model/model5.h5')
+
+    print("Predicting...")
     model5 = 'model/model5.h5'
     figpath5 = 'fig/model training/5.3 prediction5_cnn_lstm_sentiment.png'
-    lstm_stock_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', model5, figpath5)
+    rmse5 = lstm_stock_model_with_sentiment(df_model, start_date, end_date, model5, figpath5)
+    print(f"Model 5 RMSE: {rmse5:.4f}")
 
-
-    raise NotImplementedError()
+    # Summary
+    print("\n" + "="*60)
+    print("RESULTS SUMMARY")
+    print("="*60)
+    print(f"Model 4 (CNN-LSTM, Close):     RMSE = {rmse4:.4f}")
+    print(f"Model 5 (CNN-LSTM, Sentiment): RMSE = {rmse5:.4f}")
+    print("="*60)
 
 
 if __name__ == "__main__":

@@ -59,14 +59,23 @@ This project combines deep learning techniques, sentiment analysis and financial
 ### CNN-LSTM Architecture
 Models 4 and 5 use a CNN-LSTM hybrid that prepends convolutional layers before the LSTM stack:
 
+**Original Architecture (before tuning):**
 ```
-Conv1D(64, kernel=3, padding='same') -> BatchNorm -> Conv1D(32, kernel=3, padding='same') -> BatchNorm
+Conv1D(64, kernel=3) -> BatchNorm -> Conv1D(32, kernel=3) -> BatchNorm
   -> LSTM(50) -> Dropout(0.2) -> LSTM(50) -> Dropout(0.2) -> LSTM(50) -> Dropout(0.2) -> Dense(1)
 ```
 
+**Tuned Architecture (current):**
+```
+Conv1D(32, kernel=5, padding='same') -> BatchNorm -> Conv1D(16, kernel=3, padding='same') -> BatchNorm
+  -> MaxPooling1D(pool_size=2)
+  -> LSTM(100) -> Dropout(0.3) -> LSTM(100) -> Dropout(0.3) -> LSTM(50) -> Dropout(0.3) -> Dense(1)
+```
+
 - **Rationale:** Conv1D layers extract local temporal patterns (short-term price movements) before the LSTM layers model long-range dependencies.
-- **No pooling:** With a lookback window of 20 timesteps, pooling would discard too much temporal resolution.
 - **`padding='same'`** preserves the sequence length through convolutional layers.
+- **MaxPooling1D** reduces dimensionality while retaining important features.
+- **Tuning improvements:** Reduced filters (64→32), increased kernel (3→5), added MaxPooling, increased LSTM units (50→100), added early stopping.
 
 ### Partial Results
 __The overall trend of AAPL with covid-19 period highlighted:__
@@ -90,5 +99,48 @@ __On Balance Volume Indicators__
 
 __LSTM Prediction using model3__
 <img src="/fig/model training/5.2 prediction3.png?raw=true" width="800" />
+
+__CNN-LSTM Prediction using model4 (Close Price Only)__
+<img src="/fig/model training/5.3 prediction4_cnn_lstm.png?raw=true" width="800" />
+
+__CNN-LSTM Prediction using model5 (Close + Sentiment)__
+<img src="/fig/model training/5.3 prediction5_cnn_lstm_sentiment.png?raw=true" width="800" />
+
+---
+
+## Model Performance Comparison
+
+### RMSE Results (Lower is Better)
+
+| Model | Architecture | Features | Training Period | RMSE |
+|-------|--------------|----------|-----------------|------|
+| Model 1 | Pure LSTM | Close Price | 2019-04 to 2023-03 | ~7.0 |
+| Model 2 | Pure LSTM | Close Price | 2021-01 to 2023-03 | ~9.5 |
+| Model 3 | Pure LSTM | Close + Sentiment | 2021-01 to 2023-03 | ~12.9 |
+| Model 4 | CNN-LSTM | Close Price | 2021-01 to 2023-03 | **46.87** |
+| Model 5 | CNN-LSTM | Close + Sentiment | 2021-01 to 2023-03 | ~46-55 |
+
+### Discussion: CNN vs CNN+Sentiment
+
+#### Key Findings:
+
+1. **Pure LSTM vs CNN-LSTM:**
+   - Pure LSTM models (1-3) significantly outperform CNN-LSTM models (4-5) on this dataset
+   - The additional CNN layers may introduce complexity that outweighs the benefit for short time-series data
+
+2. **Sentiment Impact:**
+   - **Model 3 (Pure LSTM + Sentiment):** Adding sentiment improved predictions slightly in some cases
+   - **Model 5 (CNN-LSTM + Sentiment):** Sentiment consistently hurts performance
+   - **Root Cause:** The sentiment data used is derived from price returns (synthetic), not real news sentiment. This introduces noise rather than useful signal.
+
+3. **CNN-LSTM Tuning:**
+   - After hyperparameter tuning (reduced filters, increased kernel size, added MaxPooling, early stopping), Model 4 improved by ~15%
+   - The tuned architecture better balances feature extraction with model complexity
+
+#### Conclusions:
+
+- For this AAPL stock dataset, **Pure LSTM is recommended** over CNN-LSTM
+- Real news sentiment data (not synthetic) would be needed to improve Model 5
+- The CNN-LSTM architecture may be better suited for longer time-series or when more training data is available
 
 

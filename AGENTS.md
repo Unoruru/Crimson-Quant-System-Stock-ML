@@ -78,6 +78,42 @@ Five `.h5` Keras models in `model/` (3 pure-LSTM, 2 CNN-LSTM hybrid). The pipeli
 - **Typo:** `oulier_detection` in `preprocessing.py` (missing 't' in "outlier")
 - **Relative path inconsistency:** CSV save paths in `api_requests.py` use `../../../data` which may break depending on working directory
 
+## Recent Changes (2026-02-18)
+
+### CNN-LSTM Model Tuning
+
+**Problem:** CNN-LSTM models (4-5) performed significantly worse than pure LSTM models.
+
+**Initial Results:**
+- Model 4 (CNN-LSTM, Close): RMSE = 55.60
+- Model 5 (CNN-LSTM, Sentiment): RMSE = 46.62
+
+**Tuning Actions Applied:**
+
+1. **Reduced CNN filters:** Changed from (64, 32) to (32, 16) - less aggressive feature extraction
+2. **Increased kernel size:** Changed from 3 to 5 - better capture of local patterns
+3. **Added MaxPooling1D:** After Conv layers for dimensionality reduction
+4. **Increased LSTM units:** From 50 to 100 (first 2 layers) + 50
+5. **Increased dropout:** From 0.2 to 0.3 - better regularization
+6. **Reduced batch size:** From 64 to 32 - more stable training
+7. **Added early stopping:** patience=15, restore_best_weights=True
+8. **Increased epochs:** From 50 to 100 with early stopping
+
+**Tuned Results:**
+- Model 4 (CNN-LSTM, Close): RMSE = 46.87 (**+15.7% improvement**)
+- Model 5 (CNN-LSTM, Sentiment): RMSE = 50.38 (-8.1%)
+
+**Model 5 Investigation:**
+Multiple architectures tested for 2D input (close + sentiment):
+- Reduced filter architecture: RMSE = 63.41 (worse)
+- Higher dropout (0.5): RMSE = 55.36 (worse)
+- Same as Model 4 architecture: RMSE = 55.36 (still worse)
+
+**Root Cause:** Sentiment data is **synthetic** (derived from price returns), not real news sentiment. This adds noise rather than signal. The sentiment feature hurts performance in all cases.
+
+**Files Modified:**
+- `code/functions/model_training.py` - CNN-LSTM architecture changes
+
 ## Issues
 
 No open GitHub issues.

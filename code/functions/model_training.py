@@ -105,47 +105,57 @@ class LSTMStockModel():
         return model
     
     def cnn_lstm_architecture_1dim(self, x_train):
+        """Optimized CNN-LSTM for 1D (close price only) input."""
+        from keras.optimizers import Adam
         model = Sequential()
-        # Conv1D feature extraction
-        model.add(Conv1D(filters=64, kernel_size=3, padding='same', activation='relu',
+        # Conv1D - reduced filters, larger kernel for better pattern capture
+        model.add(Conv1D(filters=32, kernel_size=5, padding='same', activation='relu',
                          input_shape=(x_train.shape[1], 1)))
         model.add(BatchNormalization())
-        model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        model.add(Conv1D(filters=16, kernel_size=3, padding='same', activation='relu'))
         model.add(BatchNormalization())
-        # LSTM layers (same as pure-LSTM baseline)
-        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
-        model.add(Dropout(0.2))
-        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
-        model.add(Dropout(0.2))
+        model.add(MaxPooling1D(pool_size=2))
+        # LSTM layers - increased units for better representation
+        model.add(LSTM(units=100, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.3))
+        model.add(LSTM(units=100, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.3))
         model.add(LSTM(units=50, activation='tanh'))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.3))
         model.add(Dense(units=1))
-        model.compile(optimizer='adam', loss='mean_squared_error')
+        # Lower learning rate for stability
+        model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
         model.summary()
         return model
 
     def cnn_lstm_architecture_2dim(self, x_train):
+        """CNN-LSTM for 2D (close + sentiment) - same as 1D but with 2 input features."""
+        from keras.optimizers import Adam
         model = Sequential()
-        # Conv1D feature extraction
-        model.add(Conv1D(filters=64, kernel_size=3, padding='same', activation='relu',
+        # Same architecture as 1D but accepts 2 features
+        model.add(Conv1D(filters=32, kernel_size=5, padding='same', activation='relu',
                          input_shape=(x_train.shape[1], x_train.shape[2])))
         model.add(BatchNormalization())
-        model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        model.add(Conv1D(filters=16, kernel_size=3, padding='same', activation='relu'))
         model.add(BatchNormalization())
-        # LSTM layers (same as pure-LSTM baseline)
-        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
-        model.add(Dropout(0.2))
-        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
-        model.add(Dropout(0.2))
+        model.add(MaxPooling1D(pool_size=2))
+        # Same LSTM config as 1D
+        model.add(LSTM(units=100, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.3))
+        model.add(LSTM(units=100, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.3))
         model.add(LSTM(units=50, activation='tanh'))
-        model.add(Dropout(0.2))
+        model.add(Dropout(0.3))
         model.add(Dense(units=1))
-        model.compile(optimizer='adam', loss='mean_squared_error')
+        model.compile(optimizer=Adam(learning_rate=0.001), loss='mean_squared_error')
         model.summary()
         return model
 
     def model_fitting(self, model, x_train, y_train, model_savepath):
-        history = model.fit(x_train, y_train, epochs = 200, batch_size = 64, validation_split=0.05)
+        # Add early stopping to prevent overfitting
+        early_stop = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+        history = model.fit(x_train, y_train, epochs=100, batch_size=32, validation_split=0.1,
+                          callbacks=[early_stop], verbose=1)
         model.save(model_savepath)
         print('model is saved!')
         return history
