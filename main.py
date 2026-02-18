@@ -7,7 +7,7 @@ from code.functions.visualization import plot_obv, OBV_based_signals
 from code.functions.indicator import monthly_return_calculation, null_hypothesis, OBV_calculation, buy_sell
 from code.functions.indicator import seasonal_decomposition, seasonality_with_moving_window, seasonality_adjustment
 from code.functions.model_training import LSTMStockModel
-from code.model import lstm_stock_model, lstm_stock_model_with_sentiment
+from code.model import lstm_stock_model, lstm_stock_model_with_sentiment, train_cnn_lstm_model, train_cnn_lstm_model_with_sentiment
 from keras.models import load_model
 import pandas as pd
 def main():
@@ -134,7 +134,21 @@ def main():
     figpath3 = 'fig/model training/5.2 prediction3.png'
     lstm_stock_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', model3, figpath3)
 
-    
+    # model4, CNN-LSTM 1D (close only), same date range as model2 for direct comparison
+    # Training (run once, then comment out):
+    # train_cnn_lstm_model(df_model, '2021-01-01', '2023-03-31', 'model/model4.h5')
+    model4 = 'model/model4.h5'
+    figpath4 = 'fig/model training/5.3 prediction4_cnn_lstm.png'
+    lstm_stock_model(df_model, '2021-01-01', '2023-03-31', model4, figpath4)
+
+    # model5, CNN-LSTM 2D (close + sentiment), same date range as model3 for direct comparison
+    # Training (run once, then comment out):
+    # train_cnn_lstm_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', 'model/model5.h5')
+    model5 = 'model/model5.h5'
+    figpath5 = 'fig/model training/5.3 prediction5_cnn_lstm_sentiment.png'
+    lstm_stock_model_with_sentiment(df_model, '2021-01-01', '2023-03-31', model5, figpath5)
+
+
     raise NotImplementedError()
 
 

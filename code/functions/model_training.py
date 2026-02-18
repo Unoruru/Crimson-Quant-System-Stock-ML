@@ -104,6 +104,46 @@ class LSTMStockModel():
         model.summary()
         return model
     
+    def cnn_lstm_architecture_1dim(self, x_train):
+        model = Sequential()
+        # Conv1D feature extraction
+        model.add(Conv1D(filters=64, kernel_size=3, padding='same', activation='relu',
+                         input_shape=(x_train.shape[1], 1)))
+        model.add(BatchNormalization())
+        model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        model.add(BatchNormalization())
+        # LSTM layers (same as pure-LSTM baseline)
+        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(Dense(units=1))
+        model.compile(optimizer='adam', loss='mean_squared_error')
+        model.summary()
+        return model
+
+    def cnn_lstm_architecture_2dim(self, x_train):
+        model = Sequential()
+        # Conv1D feature extraction
+        model.add(Conv1D(filters=64, kernel_size=3, padding='same', activation='relu',
+                         input_shape=(x_train.shape[1], x_train.shape[2])))
+        model.add(BatchNormalization())
+        model.add(Conv1D(filters=32, kernel_size=3, padding='same', activation='relu'))
+        model.add(BatchNormalization())
+        # LSTM layers (same as pure-LSTM baseline)
+        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, return_sequences=True, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(LSTM(units=50, activation='tanh'))
+        model.add(Dropout(0.2))
+        model.add(Dense(units=1))
+        model.compile(optimizer='adam', loss='mean_squared_error')
+        model.summary()
+        return model
+
     def model_fitting(self, model, x_train, y_train, model_savepath):
         history = model.fit(x_train, y_train, epochs = 200, batch_size = 64, validation_split=0.05)
         model.save(model_savepath)
@@ -118,7 +158,12 @@ class LSTMStockModel():
         predictions = predictions.flatten()
 
         # Inverse transform the predictions to get them back to the original scale
-        predictions = scaler.inverse_transform(np.column_stack((predictions, np.zeros_like(predictions))))[:, 0]
+        n_features = scaler.n_features_in_
+        if n_features == 1:
+            predictions = scaler.inverse_transform(predictions.reshape(-1, 1))[:, 0]
+        else:
+            pad = np.zeros((len(predictions), n_features - 1))
+            predictions = scaler.inverse_transform(np.column_stack((predictions, pad)))[:, 0]
 
         # Get the root mean squared error (RMSE)
         rmse = np.sqrt(np.mean((predictions - y_test) ** 2))

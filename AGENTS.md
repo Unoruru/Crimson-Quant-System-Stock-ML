@@ -2,12 +2,12 @@
 
 ## Project
 
-AAPL stock price prediction using LSTM neural networks combined with VADER sentiment analysis on financial news headlines (New York Times, Financial Times). Data range: 2019-04 to 2023-04.
+AAPL stock price prediction using LSTM and CNN-LSTM hybrid neural networks combined with VADER sentiment analysis on financial news headlines (New York Times, Financial Times). Data range: 2019-04 to 2023-04.
 
 ## Tech Stack
 
 - **Language:** Python
-- **ML/DL:** TensorFlow/Keras (Sequential LSTM), scikit-learn (MinMaxScaler, metrics)
+- **ML/DL:** TensorFlow/Keras (Sequential LSTM, CNN-LSTM hybrid), scikit-learn (MinMaxScaler, metrics)
 - **NLP:** NLTK VADER sentiment analyzer
 - **Data:** pandas, NumPy
 - **Visualization:** matplotlib, seaborn
@@ -22,7 +22,7 @@ AAPL stock price prediction using LSTM neural networks combined with VADER senti
 ├── main.py                          # Full pipeline orchestrator
 ├── code/
 │   ├── data_acquire.py              # Data acquisition facade (stock + news + sentiment)
-│   ├── model.py                     # LSTM model inference wrappers
+│   ├── model.py                     # LSTM and CNN-LSTM model inference/training wrappers
 │   ├── functions/
 │   │   ├── data_gathering_and_storage/
 │   │   │   ├── api_requests.py      # IEX Cloud stock API, NYT API, FT web scraping
@@ -30,7 +30,7 @@ AAPL stock price prediction using LSTM neural networks combined with VADER senti
 │   │   │   └── storage.py           # MongoDB Atlas connect/insert/fetch
 │   │   ├── preprocessing.py         # Missing value interpolation, outlier detection
 │   │   ├── indicator.py             # Monthly returns, ADF test, OBV, seasonality
-│   │   ├── model_training.py        # LSTMStockModel class (build, train, predict, viz)
+│   │   ├── model_training.py        # LSTMStockModel class (LSTM + CNN-LSTM architectures, train, predict, viz)
 │   │   └── visualization.py         # Plotting functions (area, line, scatter, covid, OBV)
 │   ├── aapl data gathering.ipynb    # Interactive data acquisition notebook
 │   ├── data processing.ipynb        # Data processing notebook
@@ -38,7 +38,9 @@ AAPL stock price prediction using LSTM neural networks combined with VADER senti
 ├── model/
 │   ├── model1.h5                    # LSTM trained on 2019-04 to 2023-03 (price only)
 │   ├── model2.h5                    # LSTM trained on 2021-01 to 2023-03 (price only)
-│   └── model3.h5                    # LSTM trained on 2021-01 to 2023-03 (price + sentiment)
+│   ├── model3.h5                    # LSTM trained on 2021-01 to 2023-03 (price + sentiment)
+│   ├── model4.h5                    # CNN-LSTM trained on 2021-01 to 2023-03 (price only)
+│   └── model5.h5                    # CNN-LSTM trained on 2021-01 to 2023-03 (price + sentiment)
 ├── data/
 │   ├── aapl_News_All.csv            # Combined news headlines
 │   ├── aapl_News_FT.csv             # Financial Times headlines
@@ -67,7 +69,7 @@ AAPL stock price prediction using LSTM neural networks combined with VADER senti
 
 ## Pre-trained Models
 
-Three `.h5` Keras models in `model/`. The pipeline loads these for inference; training code exists in `LSTMStockModel` class but is commented out in `model.py`.
+Five `.h5` Keras models in `model/` (3 pure-LSTM, 2 CNN-LSTM hybrid). The pipeline loads these for inference; training code exists in `LSTMStockModel` class but is commented out in `model.py`.
 
 ## Known Code Issues
 
