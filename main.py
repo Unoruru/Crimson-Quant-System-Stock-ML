@@ -4,13 +4,19 @@ import os
 
 from code.functions.preprocessing import missing_value_handling, outlier_detection
 from code.functions.model_training import LSTMStockModel
-from code.model import lstm_stock_model, lstm_stock_model_with_sentiment, train_cnn_lstm_model, train_cnn_lstm_model_with_sentiment
+from code.model import (
+    lstm_stock_model,
+    lstm_stock_model_with_sentiment,
+    train_lstm_model_with_sentiment,
+    train_cnn_lstm_model,
+    train_cnn_lstm_model_with_sentiment,
+)
 
 def download_stock_data():
     """Download AAPL stock data using yfinance."""
     print("Downloading AAPL stock data from Yahoo Finance...")
     ticker = yf.Ticker("AAPL")
-    df = ticker.history(period="5y")
+    df = ticker.history(start="2021-01-01")
     df = df.reset_index()
     df['Date'] = df['Date'].dt.strftime('%Y-%m-%d')
     # Synthetic sentiment
@@ -22,7 +28,7 @@ def download_stock_data():
 
 
 def main():
-    """Train and evaluate models 4-5 (CNN-LSTM)."""
+    """Train and evaluate models 3-5."""
 
     # Download data
     df = download_stock_data()
@@ -35,9 +41,26 @@ def main():
     os.makedirs('fig/model training', exist_ok=True)
     os.makedirs('model', exist_ok=True)
 
-    # Date range
-    start_date = '2021-02-19'
-    end_date = '2023-03-31'
+    # Unified date range: train on 2021-01 to 2025-12, validate on ~Jan 2026
+    start_date = '2021-01-01'
+    end_date = '2025-12-31'
+
+    # ============================================
+    # Model 3: LSTM + Sentiment
+    # ============================================
+    print("\n" + "="*60)
+    print("Model 3: LSTM (Close + Sentiment)")
+    print(f"Training: {start_date} to {end_date}")
+    print("="*60)
+
+    print("Training...")
+    train_lstm_model_with_sentiment(df_model, start_date, end_date, 'model/model3.h5')
+
+    print("Predicting...")
+    model3 = 'model/model3.h5'
+    figpath3 = 'fig/model training/5.3 prediction3_lstm_sentiment.png'
+    rmse3 = lstm_stock_model_with_sentiment(df_model, start_date, end_date, model3, figpath3)
+    print(f"Model 3 RMSE: {rmse3:.4f}")
 
     # ============================================
     # Model 4: CNN-LSTM (close only)
@@ -77,6 +100,7 @@ def main():
     print("\n" + "="*60)
     print("RESULTS SUMMARY")
     print("="*60)
+    print(f"Model 3 (LSTM, Sentiment):     RMSE = {rmse3:.4f}")
     print(f"Model 4 (CNN-LSTM, Close):     RMSE = {rmse4:.4f}")
     print(f"Model 5 (CNN-LSTM, Sentiment): RMSE = {rmse5:.4f}")
     print("="*60)

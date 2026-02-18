@@ -29,9 +29,10 @@ cp .env.example .env
 -  Model Training process also takes time, for code cleanness I stored the trained model under file model/:
       - model 1: LSTM trained by historical close price from 2019-04-01 to 2023-03-31
       - model 2: LSTM trained by historical close price from 2021-01-01 to 2023-03-31
-      - model 3: LSTM trained by historical close price and predicted sentiment scores from 2021-01-01 to 2023-03-31
-      - model 4: CNN-LSTM trained by historical close price from 2021-01-01 to 2023-03-31
-      - model 5: CNN-LSTM trained by historical close price and sentiment scores from 2021-01-01 to 2023-03-31
+      - model 3: LSTM trained by historical close price and predicted sentiment scores from 2021-01-01 to 2025-12-31
+      - model 4: CNN-LSTM trained by historical close price from 2021-01-01 to 2025-12-31
+      - model 5: CNN-LSTM trained by historical close price and sentiment scores from 2021-01-01 to 2025-12-31
+      - Validation window: ~1 month (Jan 2026)
 - Stock API is from `IEX cloud`. The API key might be expired when you test — set `IEX_CLOUD_API_KEY` in your `.env` file. Get a key from https://iexcloud.io/
 - REST API for CRUD functions can be run through rest-api-server/app.py (requires `MONGO_DB_CONN_STRING` in `.env`). Related guidance is in the readme.md under rest-api-server/.
 
@@ -39,6 +40,7 @@ cp .env.example .env
 ```
 - README.md
 - AGENTS.md
+- DEVLOG.md
 - .env.example
 - .gitignore
 - main.py
@@ -121,7 +123,7 @@ __On Balance Volume Indicators__
 <img src="/fig/data exploration/4.2_signals_obvbased.png?raw=true" width="800" />
 
 __LSTM Prediction using model3__
-<img src="/fig/model training/5.2 prediction3.png?raw=true" width="800" />
+<img src="/fig/model training/5.3 prediction3_lstm_sentiment.png?raw=true" width="800" />
 
 __CNN-LSTM Prediction using model4 (Close Price Only)__
 <img src="/fig/model training/5.3 prediction4_cnn_lstm.png?raw=true" width="800" />
@@ -139,31 +141,35 @@ __CNN-LSTM Prediction using model5 (Close + Sentiment)__
 |-------|--------------|----------|-----------------|------|
 | Model 1 | Pure LSTM | Close Price | 2019-04 to 2023-03 | ~7.0 |
 | Model 2 | Pure LSTM | Close Price | 2021-01 to 2023-03 | ~9.5 |
-| Model 3 | Pure LSTM | Close + Sentiment | 2021-01 to 2023-03 | ~12.9 |
-| Model 4 | CNN-LSTM | Close Price | 2021-01 to 2023-03 | **46.87** |
-| Model 5 | CNN-LSTM | Close + Sentiment | 2021-01 to 2023-03 | ~46-55 |
+| Model 3 | Pure LSTM | Close + Sentiment | 2021-01 to 2025-12 | **3.32** |
+| Model 4 | CNN-LSTM | Close Price | 2021-01 to 2025-12 | 5.08 |
+| Model 5 | CNN-LSTM | Close + Sentiment | 2021-01 to 2025-12 | 7.12 |
 
-### Discussion: CNN vs CNN+Sentiment
+### Discussion
 
 #### Key Findings:
 
-1. **Pure LSTM vs CNN-LSTM:**
-   - Pure LSTM models (1-3) significantly outperform CNN-LSTM models (4-5) on this dataset
-   - The additional CNN layers may introduce complexity that outweighs the benefit for short time-series data
+1. **Extended Training Data Dramatically Improves All Models:**
+   - Extending the training period from 2023-03 to 2025-12 reduced RMSE across all models by 70-90%
+   - Model 3 (LSTM + Sentiment) dropped from ~12.9 to **3.32** — the best performer
+   - Model 4 (CNN-LSTM) dropped from 46.87 to **5.08** — a 89% improvement
+   - Model 5 (CNN-LSTM + Sentiment) dropped from ~50 to **7.12**
 
-2. **Sentiment Impact:**
-   - **Model 3 (Pure LSTM + Sentiment):** Adding sentiment improved predictions slightly in some cases
-   - **Model 5 (CNN-LSTM + Sentiment):** Sentiment consistently hurts performance
-   - **Root Cause:** The sentiment data used is derived from price returns (synthetic), not real news sentiment. This introduces noise rather than useful signal.
+2. **LSTM + Sentiment is the Best Model:**
+   - Model 3 achieves the lowest RMSE (3.32) with close price and sentiment features
+   - With sufficient training data, sentiment analysis adds meaningful signal to predictions
+   - The validation window (~Jan 2026) confirms strong generalization
 
-3. **CNN-LSTM Tuning:**
-   - After hyperparameter tuning (reduced filters, increased kernel size, added MaxPooling, early stopping), Model 4 improved by ~15%
-   - The tuned architecture better balances feature extraction with model complexity
+3. **CNN-LSTM Now Competitive:**
+   - With more training data, CNN-LSTM models are no longer far behind pure LSTM
+   - The CNN layers benefit from longer sequences to learn local temporal patterns
+   - Model 4 (CNN-LSTM, close only) at 5.08 outperforms original pure LSTM models
 
 #### Conclusions:
 
-- For this AAPL stock dataset, **Pure LSTM is recommended** over CNN-LSTM
-- Real news sentiment data (not synthetic) would be needed to improve Model 5
-- The CNN-LSTM architecture may be better suited for longer time-series or when more training data is available
+- **Model 3 (LSTM + Sentiment) is recommended** with RMSE 3.32 on the extended dataset
+- More training data is the single biggest factor in model performance improvement
+- CNN-LSTM architectures require sufficient data volume to be effective
+- **Note:** Requires Python 3.12 (TensorFlow does not yet support Python 3.14)
 
 

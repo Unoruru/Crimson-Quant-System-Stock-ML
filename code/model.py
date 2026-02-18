@@ -57,6 +57,21 @@ def lstm_stock_model_with_sentiment(df_model, historical_start_date,  historical
     return rmse
 
 
+def train_lstm_model_with_sentiment(df_model, historical_start_date, historical_end_date, model_savepath):
+    """Train an LSTM model on close price + sentiment (2D)."""
+    stock_model = LSTMStockModel()
+
+    df1, arrdata = stock_model.loaddata(df_model, ['Date', 'Close', 'compound'], historical_start_date, ['Close', 'compound'])
+    scaled_data, scaler = stock_model.normalization(arrdata)
+    train_len = stock_model.training_length(df1, historical_end_date)
+    x_train, y_train, x_test, y_test = stock_model.train_test_split(scaled_data, arrdata, train_len, 20)
+
+    model = stock_model.model_architecture_2dim(x_train)
+    history = stock_model.model_fitting(model, x_train, y_train, model_savepath)
+    stock_model.training_loss_viz(history)
+    return history
+
+
 def train_cnn_lstm_model(df_model, historical_start_date, historical_end_date, model_savepath):
     """Train a CNN-LSTM model on close price only (1D)."""
     stock_model = LSTMStockModel()
