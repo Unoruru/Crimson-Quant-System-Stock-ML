@@ -1,0 +1,3 @@
+Experiment: no_sentiment
+MAE (Close): 2.3269
+RMSE (Close): 3.0304
