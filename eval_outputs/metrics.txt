@@ -1,0 +1,30 @@
+Checkpoint: AAPL_no_sentiment_best.pt
+CSV: AAPL_2018-01-01_2025-12-31.csv
+Date range used: [2019-04-01, 2022-11-01)
+Target: y_next_logret
+Train end date from checkpoint: 2022-11-01
+Evaluation start date: 2022-11-03
+Evaluation end date: 2023-06-30
+Total windows: 1588
+Evaluation windows: 164
+
+[Final Evaluation Metrics]
+MAE: 1.852082
+RMSE: 2.481412
+MAPE_%: 1.234250
+R2: 0.977671
+DirAcc_%: 50.306748
+UpPrecision_%: 57.446809
+DownPrecision_%: 47.008547
+PredUpRatio_%: 28.658537
+PredDownRatio_%: 71.341463
+StrategyReturn_%: 14.176648
+BuyHoldReturn_%: 34.356684
+ExcessReturn_%: -20.180037
+Sharpe: 1.344288
+MaxDrawdown_%: -6.410409
+WinRate_%: 59.183673
+TradeCount: 49
+Exposure_%: 29.878049
+Threshold_Value: -0.000024
+Threshold_Quantile_%: 70.000000

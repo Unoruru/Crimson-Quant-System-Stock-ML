@@ -1,0 +1,36 @@
+Experiment: with_sentiment
+Ticker: AAPL
+Date range: 2019-04-01 -> 2022-11-01
+Lookback: 60
+Target: y_next_logret
+
+[Validation Price Metrics]
+MAE: 2.644219
+RMSE: 3.345049
+MAPE_%: 1.585893
+R2: 0.790156
+
+[Validation Direction Metrics]
+DirAcc_%: 55.462185
+UpPrecision_%: 52.688172
+DownPrecision_%: 65.384615
+PredUpRatio_%: 78.151261
+PredDownRatio_%: 21.848739
+
+[Validation Trading Metrics]
+StrategyReturn_%: 13.519553
+BuyHoldReturn_%: 0.701937
+ExcessReturn_%: 12.817616
+Sharpe: 1.813865
+MaxDrawdown_%: -7.381533
+WinRate_%: 61.111111
+TradeCount: 36
+Exposure_%: 30.252101
+Threshold_Value: 0.000436
+Threshold_Quantile_%: 70.000000
+
+[Test Price Metrics]
+MAE: 2.664715
+RMSE: 3.412585
+MAPE_%: 1.794430
+R2: 0.894555
