@@ -11,7 +11,7 @@ from nltk.sentiment import SentimentIntensityAnalyzer
 # Change these values here, then run: python build_sentiment_daily.py
 # ============================================================
 DATA_DIR = "data"
-INPUT_FILENAME = "Apple_OR_AAPL_2026-02-08_2026-03-07_newsapi.csv"  # or e.g. "apple_news.csv"
+INPUT_FILENAME = "AAPL_20260208T0000_20260307T2359_alphavantage_news"  # or e.g. "apple_news.csv"
 OUTPUT_FILENAME = "sentiment_daily.csv"
 
 # Which text columns to combine for sentiment scoring
