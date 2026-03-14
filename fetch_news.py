@@ -1,5 +1,4 @@
 import os
-import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -12,35 +11,24 @@ import requests
 # Change these values here, then run:
 #     python fetch_news_alphavantage.py
 # ============================================================
-API_KEY = "YI76ZVZQORBEPOEHX"
+API_KEY = "YOUR_ALPHA_VANTAGE_API_KEY"
 
-# Examples:
-# "AAPL"
-# "AAPL,MSFT"
-# "COIN,CRYPTO:BTC,FOREX:USD"
 TICKERS = "AAPL"
-
-# Optional topics, examples:
-# "technology"
-# "technology,ipo"
-# "financial_markets"
 TOPICS = None
 
-# Alpha Vantage time format: YYYYMMDDTHHMM
-# Example: 20260301T0000
-TIME_FROM = "20260208T0000"
-TIME_TO = "20260307T2359"
+# Format: YYYYMMDDTHHMM
+TIME_FROM = "20221102T0000"
+TIME_TO = "20230630T2359"
 
 SORT = "EARLIEST"   # LATEST / EARLIEST / RELEVANCE
-LIMIT = 1000        # up to 1000
-OUTPUT_FILENAME = None   # e.g. "aapl_news_alphavantage.csv"
+LIMIT = 1000
+OUTPUT_FILENAME = None
 DATA_DIR = "data"
 
 BASE_URL = "https://www.alphavantage.co/query"
 
 
 def validate_time_str(time_str: str) -> str:
-    """Validate Alpha Vantage news time format: YYYYMMDDTHHMM"""
     try:
         datetime.strptime(time_str, "%Y%m%dT%H%M")
     except ValueError as exc:
@@ -59,7 +47,6 @@ def fetch_news(
     sort: str = "EARLIEST",
     limit: int = 1000,
 ) -> Dict[str, Any]:
-    """Fetch news from Alpha Vantage NEWS_SENTIMENT endpoint."""
     if not api_key:
         raise ValueError("API_KEY is empty.")
 
@@ -92,7 +79,6 @@ def fetch_news(
 
     data = response.json()
 
-    # Alpha Vantage often returns "Note", "Information", or "Error Message"
     if "Error Message" in data:
         raise RuntimeError(f"Alpha Vantage error: {data['Error Message']}")
     if "Information" in data:
@@ -103,93 +89,24 @@ def fetch_news(
     return data
 
 
-def parse_ticker_sentiment(item: Dict[str, Any], target_tickers: List[str]) -> Dict[str, Any]:
-    """
-    Extract ticker-sentiment fields related to the target tickers if available.
-    """
-    ticker_sentiments = item.get("ticker_sentiment", []) or []
-
-    matched = []
-    for ts in ticker_sentiments:
-        ticker = str(ts.get("ticker", "")).upper()
-        if ticker in target_tickers:
-            matched.append(ts)
-
-    if not matched:
-        return {
-            "matched_tickers": None,
-            "ticker_relevance_score": None,
-            "ticker_sentiment_score": None,
-            "ticker_sentiment_label": None,
-        }
-
-    # If multiple matched tickers, join them; numeric fields take the first match
-    first = matched[0]
-    return {
-        "matched_tickers": ",".join(str(x.get("ticker", "")) for x in matched),
-        "ticker_relevance_score": first.get("relevance_score"),
-        "ticker_sentiment_score": first.get("ticker_sentiment_score"),
-        "ticker_sentiment_label": first.get("ticker_sentiment_label"),
-    }
-
-
-def feed_to_dataframe(feed: List[Dict[str, Any]], tickers: Optional[str]) -> pd.DataFrame:
-    """
-    Convert Alpha Vantage feed into a dataframe.
-    Output columns are designed to be similar to your NewsAPI CSV style.
-    """
-    target_tickers = []
-    if tickers:
-        target_tickers = [x.strip().upper() for x in tickers.split(",") if x.strip()]
-
+def feed_to_simple_dataframe(feed: List[Dict[str, Any]]) -> pd.DataFrame:
     rows = []
+
     for item in feed:
-        source = item.get("source")
-        authors = item.get("authors")
-        summary = item.get("summary")
         title = item.get("title")
-        url = item.get("url")
-        banner_image = item.get("banner_image")
         time_published = item.get("time_published")
-        overall_sentiment_score = item.get("overall_sentiment_score")
-        overall_sentiment_label = item.get("overall_sentiment_label")
-        category_within_source = item.get("category_within_source")
-        source_domain = item.get("source_domain")
-        topics_list = item.get("topics", [])
 
-        topic_names = []
-        for t in topics_list:
-            if isinstance(t, dict):
-                topic_names.append(str(t.get("topic", "")))
-            else:
-                topic_names.append(str(t))
-
-        ticker_info = parse_ticker_sentiment(item, target_tickers)
+        dt = pd.to_datetime(
+            time_published,
+            format="%Y%m%dT%H%M%S",
+            errors="coerce",
+            utc=True,
+        )
 
         rows.append(
             {
-                # Keep similar naming to your NewsAPI output
-                "source_id": None,
-                "source_name": source,
-                "author": ", ".join(authors) if isinstance(authors, list) else authors,
-                "title": title,
-                "description": summary,
-                "content": summary,   # duplicate summary here for easier downstream use
-                "url": url,
-                "urlToImage": banner_image,
-                "publishedAt": time_published,
-                "query": tickers,
-
-                # Extra Alpha Vantage-specific useful fields
-                "overall_sentiment_score": overall_sentiment_score,
-                "overall_sentiment_label": overall_sentiment_label,
-                "category_within_source": category_within_source,
-                "source_domain": source_domain,
-                "topics": ",".join([x for x in topic_names if x]),
-                "matched_tickers": ticker_info["matched_tickers"],
-                "ticker_relevance_score": ticker_info["ticker_relevance_score"],
-                "ticker_sentiment_score": ticker_info["ticker_sentiment_score"],
-                "ticker_sentiment_label": ticker_info["ticker_sentiment_label"],
+                "Date": dt.strftime("%Y-%m-%d") if pd.notna(dt) else None,
+                "Headline": title,
             }
         )
 
@@ -197,16 +114,8 @@ def feed_to_dataframe(feed: List[Dict[str, Any]], tickers: Optional[str]) -> pd.
     if df.empty:
         return df
 
-    # Alpha Vantage gives time as YYYYMMDDTHHMMSS
-    df["publishedAt"] = pd.to_datetime(
-        df["publishedAt"],
-        format="%Y%m%dT%H%M%S",
-        errors="coerce",
-        utc=True,
-    )
-
-    df = df.drop_duplicates(subset=["url"], keep="first").reset_index(drop=True)
-    df = df.sort_values("publishedAt", ascending=True).reset_index(drop=True)
+    df = df.dropna(subset=["Date", "Headline"]).drop_duplicates().reset_index(drop=True)
+    df = df.sort_values("Date", ascending=True).reset_index(drop=True)
     return df
 
 
@@ -217,9 +126,9 @@ def default_filename(tickers: Optional[str], time_from: Optional[str], time_to: 
     safe = "_".join(safe.split())
     safe = safe.strip("_") or "news"
 
-    tf = time_from or "start"
-    tt = time_to or "end"
-    return f"{safe}_{tf}_{tt}_alphavantage_news.csv"
+    tf = time_from[:8] if time_from else "start"
+    tt = time_to[:8] if time_to else "end"
+    return f"{safe}_News_AlphaVantage_{tf}_{tt}.csv"
 
 
 def main() -> None:
@@ -261,18 +170,17 @@ def main() -> None:
     )
 
     feed = data.get("feed", [])
-    df = feed_to_dataframe(feed, TICKERS)
+    df = feed_to_simple_dataframe(feed)
     df.to_csv(out_path, index=False, encoding="utf-8-sig")
 
     print(f"[OK] Saved {len(df)} articles to: {out_path}")
 
     if not df.empty:
         print("\n[INFO] Articles per day:")
-        per_day = df["publishedAt"].dt.strftime("%Y-%m-%d").value_counts().sort_index()
-        print(per_day.to_string())
+        print(df["Date"].value_counts().sort_index().to_string())
 
         print("\n[INFO] Preview:")
-        print(df[["publishedAt", "source_name", "title"]].head(10).to_string(index=False))
+        print(df.head(10).to_string(index=False))
     else:
         print("[WARN] No articles returned for this query/time range.")
 

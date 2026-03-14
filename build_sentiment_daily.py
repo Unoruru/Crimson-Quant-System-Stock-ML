@@ -80,6 +80,6 @@ def build_daily_sentiment(news_csv_path: str, out_csv_path: str):
 
 if __name__ == "__main__":
     # 你可以在这里选择用哪个新闻源
-    news_csv = os.path.join("data", "aapl_News_NYTimes_original.csv")
+    news_csv = os.path.join("data", "AAPL_News_AlphaVantage_20221102_20230630.csv")
     out_csv  = os.path.join("data", "sentiment_daily.csv")
     build_daily_sentiment(news_csv, out_csv)

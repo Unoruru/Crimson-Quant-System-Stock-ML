@@ -18,14 +18,14 @@ from torch_main import (
 # =========================================================
 # 0) Default config
 # =========================================================
-DEFAULT_CKPT_GLOB = os.path.join("checkpoints", "AAPL_no_sentiment_best.pt")
+DEFAULT_CKPT_GLOB = os.path.join("checkpoints", "AAPL_with_sentiment_best.pt")
 DEFAULT_CSV_GLOB = "AAPL_2018-01-01_2025-12-31.csv"
 
-OUT_DIR = "eval_outputs"
+OUT_ROOT = "eval_outputs"
 TAG = "AAPL_final_eval"
 
 # ===== 你可以手动控制评估日期范围 =====
-EVAL_START_DATE = None#"2022-11-03"   # None 表示从训练结束后第一天开始 评估范围必须在训练模型时所使用的时间范围之后
+EVAL_START_DATE = None#"2022-11-02"   # None 表示从训练结束后第一天开始 评估范围必须在训练模型时所使用的时间范围之后
 EVAL_END_DATE   = "2023-6-30"   # None 表示直到 CSV 最后一天
 
 # 如果你不想手动指定日期，也可以用最后 N 天
@@ -429,6 +429,19 @@ def main():
     print(f"[INFO] Using csv : {csv_path}")
     print(f"[INFO] ckpt ticker: {meta.get('cfg', {}).get('ticker', 'UNKNOWN')}")
 
+    feature_cols = meta.get("feature_cols", [])
+    tag_from_ckpt = meta.get("tag", "")
+    print(f"[INFO] ckpt features: {feature_cols}")
+
+    if "sentiment" in feature_cols or "with_sentiment" in str(tag_from_ckpt):
+        model_folder = "with_sentiment"
+    else:
+        model_folder = "no_sentiment"
+
+    out_dir = os.path.join(OUT_ROOT, model_folder)
+    os.makedirs(out_dir, exist_ok=True)
+    print(f"[INFO] Output folder: {out_dir}")
+
     start = meta.get("cfg", {}).get("start")
     end = meta.get("cfg", {}).get("end")
 
@@ -470,7 +483,7 @@ def main():
         f"Q={metrics['Threshold_Quantile_%']:.0f}% | Thr={metrics['Threshold_Value']:.5f}"
     )
 
-    os.makedirs(OUT_DIR, exist_ok=True)
+    os.makedirs(out_dir, exist_ok=True)
 
     plot_forecast(
         history_dates=result["history_dates"],
@@ -479,14 +492,14 @@ def main():
         eval_true=result["true_close_eval"],
         eval_pred=result["pred_close_eval"],
         metrics_text=metrics_text,
-        out_dir=OUT_DIR,
+        out_dir=out_dir,
     )
 
     plot_strategy_equity(
         eval_dates=result["eval_dates"],
         strat_equity=result["strat_equity"],
         bh_equity=result["bh_equity"],
-        out_dir=OUT_DIR,
+        out_dir=out_dir,
     )
 
     pred_df = pd.DataFrame({
@@ -503,9 +516,9 @@ def main():
     pred_df["Abs_Error"] = np.abs(pred_df["Pred_Close_next_day"] - pred_df["True_Close_next_day"])
     pred_df["True_Direction"] = np.sign(pred_df["True_Close_next_day"] - pred_df["Today_Close"])
     pred_df["Pred_Direction"] = np.sign(pred_df["Pred_Close_next_day"] - pred_df["Today_Close"])
-    pred_df.to_csv(os.path.join(OUT_DIR, "eval_predictions.csv"), index=False)
+    pred_df.to_csv(os.path.join(out_dir, "eval_predictions.csv"), index=False)
 
-    with open(os.path.join(OUT_DIR, "metrics.txt"), "w", encoding="utf-8") as f:
+    with open(os.path.join(out_dir, "metrics.txt"), "w", encoding="utf-8") as f:
         f.write(f"Checkpoint: {os.path.basename(ckpt_path)}\n")
         f.write(f"CSV: {os.path.basename(csv_path)}\n")
         f.write(f"Date range used: [{start}, {end})\n")
@@ -523,7 +536,7 @@ def main():
             else:
                 f.write(f"{k}: {v:.6f}\n")
 
-    print(f"[OK] Saved outputs to: {OUT_DIR}")
+    print(f"[OK] Saved outputs to: {out_dir}")
 
 
 if __name__ == "__main__":
