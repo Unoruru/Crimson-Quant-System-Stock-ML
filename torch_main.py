@@ -33,7 +33,7 @@ class CFG:
 
 
 cfg = CFG()
-
+0.8
 
 def set_seed(seed: int):
     random.seed(seed)
