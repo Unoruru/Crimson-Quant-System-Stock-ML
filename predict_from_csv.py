@@ -26,7 +26,7 @@ TAG = "AAPL_final_eval"
 
 # ===== 你可以手动控制评估日期范围 =====
 EVAL_START_DATE = None#"2022-11-02"   # None 表示从训练结束后第一天开始 评估范围必须在训练模型时所使用的时间范围之后
-EVAL_END_DATE   = "2023-6-30"   # None 表示直到 CSV 最后一天
+EVAL_END_DATE   = "2022-12-02"   # None 表示直到 CSV 最后一天
 
 # 如果你不想手动指定日期，也可以用最后 N 天
 USE_EXPLICIT_DATE_RANGE = True

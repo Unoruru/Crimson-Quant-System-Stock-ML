@@ -4,27 +4,27 @@ Date range used: [2019-04-01, 2022-11-01)
 Target: y_next_logret
 Train end date from checkpoint: 2022-11-01
 Evaluation start date: 2022-11-02
-Evaluation end date: 2023-06-30
+Evaluation end date: 2022-12-02
 Total windows: 1588
-Evaluation windows: 165
+Evaluation windows: 22
 
 [Final Evaluation Metrics]
-MAE: 1.874138
-RMSE: 2.510546
-MAPE_%: 1.250124
-R2: 0.977069
-DirAcc_%: 50.609756
-UpPrecision_%: 57.446809
-DownPrecision_%: 47.457627
-PredUpRatio_%: 28.484848
-PredDownRatio_%: 71.515152
-StrategyReturn_%: 14.507338
-BuyHoldReturn_%: 29.344524
-ExcessReturn_%: -14.837186
-Sharpe: 1.367559
-MaxDrawdown_%: -7.272494
-WinRate_%: 60.000000
-TradeCount: 50
-Exposure_%: 30.303030
-Threshold_Value: -0.000032
+MAE: 2.839411
+RMSE: 3.928181
+MAPE_%: 1.987318
+R2: 0.318037
+DirAcc_%: 50.000000
+UpPrecision_%: 50.000000
+DownPrecision_%: 50.000000
+PredUpRatio_%: 27.272727
+PredDownRatio_%: 72.727273
+StrategyReturn_%: -0.921133
+BuyHoldReturn_%: -1.722419
+ExcessReturn_%: 0.801285
+Sharpe: -0.344551
+MaxDrawdown_%: -5.691014
+WinRate_%: 57.142857
+TradeCount: 7
+Exposure_%: 31.818182
+Threshold_Value: -0.000048
 Threshold_Quantile_%: 70.000000
