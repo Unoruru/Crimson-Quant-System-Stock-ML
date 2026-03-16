@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+config.json
+checkpoints/
+my_fig_*/
+eval_outputs/
+*.pt
+
+# Data (large files)
+*.csv
+!data/sentiment_daily.csv
+
+# Pytest
+.pytest_cache/
+
+# Beads
+.beads
+
+# Claude
+CLAUDE.md
+.claude/
+
+# environment variables
+.env

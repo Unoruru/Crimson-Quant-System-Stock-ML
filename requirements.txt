@@ -1,0 +1,11 @@
+numpy
+pandas
+matplotlib
+torch
+yfinance
+requests
+nltk
+python-dateutil
+pytest
+python-dotenv
+
