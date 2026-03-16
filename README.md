@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Crimson Quant System
 
 CNN-LSTM stock price prediction with optional news sentiment, quantile-based trading strategy.
@@ -100,3 +101,6 @@ CLI args > `config.json` > dataclass defaults in `config.py`
 | `start` | string | `2019-04-01` | Training period start date (YYYY-MM-DD) |
 | `end` | string | `2022-11-01` | Training period end date (YYYY-MM-DD) |
 | `quantile_level` | float | `0.70` | Percentile threshold for the long-only trading strategy (0 < x < 1) |
+=======
+*** Crimson Quant System ***
+>>>>>>> origin/PolarBear
