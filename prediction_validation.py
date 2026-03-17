@@ -402,6 +402,15 @@ def main():
         eval_end = parse_eval_range("1m", cfg.end)
         print(f"[INFO] Prediction range (default 1m): {cfg.end} -> {eval_end}")
 
+    today = pd.Timestamp.today().normalize()
+    eval_end_dt = pd.to_datetime(eval_end).normalize()
+    if eval_end_dt > today:
+        raise SystemExit(
+            f"[ERROR] --range end date {eval_end} is in the future ({today.date()} is today).\n"
+            f"prediction_validation.py requires ground-truth close prices and cannot evaluate\n"
+            f"future dates. Use 'python predict.py' for a forward-looking signal instead."
+        )
+
     experiments = [
         {"tag": "no_sentiment",   "ckpt": f"{ticker}_no_sentiment_best.pt",   "needs_sentiment": False},
         {"tag": "with_sentiment", "ckpt": f"{ticker}_with_sentiment_best.pt", "needs_sentiment": True},
