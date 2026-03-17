@@ -7,7 +7,7 @@ CNN-LSTM stock price prediction with optional news sentiment, quantile-based tra
 ```
 Config
   config.py             Configuration dataclass, CLI config tool, feature list
-  config.json           Persistent overrides (ticker, start, end, epochs, patience)
+  config.json           Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
 
 Training pipeline
   train.py              Training entry point — training loop, early stopping, prediction helpers
@@ -38,12 +38,12 @@ Directories
 
 ## Workflow
 
-1. **Configure** — set ticker, dates, quantile level, epochs, and patience via `config.py --config` or edit `config.json`
+1. **Configure** — set ticker, dates, quantile level, lookback window, epochs, and patience via `config.py --config` or edit `config.json`
 2. **Fetch data** — `train.py` pulls OHLCV from Yahoo Finance automatically
 3. **Fetch news** (optional) — `fetch_news.py` pulls articles from Alpha Vantage
 4. **Score sentiment** (optional) — `sentiment_evaluation.py` scores articles with VADER and aggregates daily
 5. **Build features** — technical indicators computed in `features.py` during training
-6. **Train** — CNN-LSTM trains on 60-day windows predicting next-day log return; produces `training_sentiment_*.csv`
+6. **Train** — CNN-LSTM trains on configurable lookback windows (default 60 days) predicting next-day log return; produces `training_sentiment_*.csv`
 7. **Evaluate** — `predicate.py` evaluates on held-out data; produces `prediction_sentiment_*.csv` for sentiment runs
 
 ## Commands
@@ -52,7 +52,7 @@ Directories
 # Install dependencies
 pip install -r requirements.txt
 
-# Configure ticker, date range, quantile level, epochs, and early-stopping patience (interactive or view current)
+# Configure ticker, date range, quantile level, lookback window, epochs, and early-stopping patience (interactive or view current)
 python config.py --config
 python config.py --show
 
@@ -94,7 +94,7 @@ python -m pytest tests/ -v
 
 `config.json` > dataclass defaults in `config.py`
 
-> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, epochs, and patience. `predicate.py` accepts `--range` to control the prediction window.
+> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `predicate.py` accepts `--range` to control the prediction window.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -102,5 +102,6 @@ python -m pytest tests/ -v
 | `start` | string | `2019-04-01` | Training period start date (YYYY-MM-DD) |
 | `end` | string | `2022-11-01` | Training period end date (YYYY-MM-DD) |
 | `quantile_level` | float | `0.70` | Percentile threshold for the long-only trading strategy (0 < x < 1) |
+| `lookback` | int | `60` | Sliding window size in days used to build each training sample |
 | `epochs` | int | `300` | Maximum training epochs |
 | `patience` | int | `30` | Early-stopping patience (epochs without val-loss improvement before stopping) |
