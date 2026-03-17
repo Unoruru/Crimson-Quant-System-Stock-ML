@@ -1,0 +1,36 @@
+# Ignore Claude files
+.claude/
+CLAUDE.md
+
+# Ignore Python bytecode files
+__pycache__/
+
+# Ignore virtual environment directories
+.venv/
+
+# Ignore environment variable files
+.env
+
+# Ignore large files
+*.csv
+
+# Ignore check points and logs
+checkpoints/
+logs/
+
+# Ignore evaluation and figure output directories
+eval_outputs/
+my_fig_no_sentiment/
+my_fig_with_sentiment/
+
+# Ignore generated figures and metrics
+*.png
+metrics.txt
+
+# Ignore temp files
+temp.txt
+
+# Ignore pytest cache
+.pytest_cache/
+
+
