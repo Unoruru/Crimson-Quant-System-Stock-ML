@@ -77,3 +77,41 @@ class TestConfigLookbackDefault(unittest.TestCase):
             with patch("config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.lookback == 60
+
+
+class TestInteractiveConfigLookback(unittest.TestCase):
+    def _run_interactive(self, inputs, tmp_dir):
+        """Helper: run _interactive_config with mocked stdin and config path."""
+        from config import _interactive_config
+        with patch("builtins.input", side_effect=inputs), \
+             patch("config.os.path.dirname", return_value=tmp_dir):
+            _interactive_config()
+        config_path = os.path.join(tmp_dir, "config.json")
+        with open(config_path) as f:
+            return json.load(f)
+
+    def test_lookback_written_to_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            # inputs: ticker, start, end, quantile, lookback=90, epochs, patience
+            inputs = ["AAPL", "", "", "", "90", "", ""]
+            saved = self._run_interactive(inputs, tmp)
+        assert saved["lookback"] == 90
+
+    def test_lookback_defaults_kept_on_empty_input(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            inputs = ["AAPL", "", "", "", "", "", ""]
+            saved = self._run_interactive(inputs, tmp)
+        assert saved["lookback"] == 60
+
+    def test_lookback_invalid_value_keeps_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            # invalid "abc" then empty (keep default)
+            inputs = ["AAPL", "", "", "", "abc", "", "", ""]
+            saved = self._run_interactive(inputs, tmp)
+        assert saved["lookback"] == 60
+
+    def test_lookback_zero_rejected_keeps_default(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            inputs = ["AAPL", "", "", "", "0", "", ""]
+            saved = self._run_interactive(inputs, tmp)
+        assert saved["lookback"] == 60
