@@ -1,0 +1,75 @@
+Experiment: with_sentiment
+Ticker: AMZN
+Date range: [2023-01-01, 2025-06-30]
+Lookback: 60
+Target: y_next_logret
+Calibration_Slope: 1.668416
+Calibration_Intercept: 0.021973
+
+[Key Metrics - Scan Here]
+!!! MAE: 6.831855
+!!! RMSE: 8.462172
+!!! MAPE_%: 3.568337
+!!! R2: 0.561105
+!!! LogRet_MAE: 0.034924
+!!! LogRet_Bias: 0.021927
+!!! DirAcc_%: 46.052632
+!!! StrategyReturn_%: -3.756319
+!!! ExcessReturn_%: -4.491191
+!!! Sharpe: -0.836924
+!!! MaxDrawdown_%: -12.584723
+!!! WinRate_%: 47.826087
+!!! TradeCount: 23
+!!! Exposure_%: 30.263158
+
+[Validation Price Metrics]
+MAE: 4.513035
+RMSE: 5.564141
+MAPE_%: 2.059250
+R2: 0.752171
+
+[Validation LogRet Metrics]
+LogRet_MAE: 0.020546
+LogRet_RMSE: 0.025492
+LogRet_Bias: 0.000000
+LogRet_Corr: -0.065008
+True_LogRet_Mean: 0.000096
+Pred_LogRet_Mean: 0.000096
+True_LogRet_Std: 0.017466
+Pred_LogRet_Std: 0.017466
+
+[Validation Direction Metrics]
+DirAcc_%: 46.052632
+UpPrecision_%: 43.333333
+DownPrecision_%: 47.826087
+PredUpRatio_%: 39.473684
+PredDownRatio_%: 60.526316
+
+[Validation Trading Metrics]
+StrategyReturn_%: -3.756319
+BuyHoldReturn_%: 0.734872
+ExcessReturn_%: -4.491191
+Sharpe: -0.836924
+MaxDrawdown_%: -12.584723
+WinRate_%: 47.826087
+TradeCount: 23
+Exposure_%: 30.263158
+Threshold_Value: 0.005350
+Threshold_Quantile_%: 70.000000
+
+[Test LogRet Metrics]
+LogRet_MAE: 0.034924
+LogRet_RMSE: 0.043815
+LogRet_Bias: 0.021927
+LogRet_Corr: -0.051263
+True_LogRet_Mean: 0.000528
+Pred_LogRet_Mean: 0.022455
+True_LogRet_Std: 0.026952
+Pred_LogRet_Std: 0.025348
+
+[Test Price Metrics]
+MAE: 6.831855
+RMSE: 8.462172
+MAPE_%: 3.568337
+R2: 0.561105
+

@@ -4,7 +4,6 @@ Merges the training loop (train_model, predict_all_logret) with the
 experiment runner (run_experiment) and CLI (main).
 """
 
-import argparse
 import logging
 import os
 import random
@@ -423,30 +422,7 @@ def run_experiment(cfg: Config, use_sentiment: bool, tag: str):
 # ------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Crimson Quant System - Stock Prediction ML",
-    )
-    parser.add_argument(
-        "--ticker", "-t", default=None,
-        help="stock ticker symbol (default: from config.json or AAPL)",
-    )
-    parser.add_argument(
-        "--start", "-s", default=None,
-        help="start date YYYY-MM-DD (default: from config.json or 2019-04-01)",
-    )
-    parser.add_argument(
-        "--end", "-e", default=None,
-        help="end date YYYY-MM-DD (default: from config.json or 2022-11-01)",
-    )
-    args = parser.parse_args()
-
     cfg = Config.load()
-    if args.ticker is not None:
-        cfg.ticker = args.ticker
-    if args.start is not None:
-        cfg.start = args.start
-    if args.end is not None:
-        cfg.end = args.end
     set_seed(cfg.seed)
 
     run_experiment(cfg, use_sentiment=False, tag="no_sentiment")
