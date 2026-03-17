@@ -3,6 +3,5 @@
   "start": "2023-01-01",
   "end": "2025-06-30",
   "quantile_level": 0.7,
-  "epochs": 300,
-  "patience": 300
+  "lookback": 60
 }
