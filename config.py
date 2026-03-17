@@ -105,7 +105,25 @@ def _interactive_config():
         except ValueError:
             print("  Invalid number. Try again.")
 
-    updates = {"ticker": ticker, "start": start, "end": end, "quantile_level": quantile_level}
+    updates = {
+        "ticker": ticker,
+        "start": start,
+        "end": end,
+        "quantile_level": quantile_level,
+        "lookback": cfg.lookback,
+    }
+
+    # lookback
+    current_lookback = cfg.lookback
+    raw = input(f"  Lookback window (days) [{current_lookback}]: ").strip()
+    if raw:
+        try:
+            val = int(raw)
+            if val < 1:
+                raise ValueError
+            updates["lookback"] = val
+        except ValueError:
+            print(f"  Invalid value — keeping {current_lookback}")
 
     # epochs
     current_epochs = cfg.epochs
