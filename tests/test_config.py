@@ -53,3 +53,27 @@ class TestConfigLoad(unittest.TestCase):
                 cfg = Config.load()
         assert cfg.epochs == 300
         assert cfg.patience == 30
+
+
+class TestConfigLookbackDefault(unittest.TestCase):
+    def test_default_lookback(self):
+        cfg = Config()
+        assert cfg.lookback == 60
+
+    def test_load_lookback_from_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "config.json")
+            with open(path, "w") as f:
+                json.dump({"lookback": 90}, f)
+            with patch("config.os.path.dirname", return_value=tmp):
+                cfg = Config.load()
+        assert cfg.lookback == 90
+
+    def test_lookback_not_overridden_when_absent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "config.json")
+            with open(path, "w") as f:
+                json.dump({"epochs": 100}, f)
+            with patch("config.os.path.dirname", return_value=tmp):
+                cfg = Config.load()
+        assert cfg.lookback == 60
