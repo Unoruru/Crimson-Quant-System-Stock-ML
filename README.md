@@ -22,10 +22,11 @@ Data fetching
 Sentiment
   sentiment_evaluation.py  VADER sentiment scoring, daily aggregation, training/prediction CSV output
 
-Evaluation
+Evaluation & Signals
   metrics.py            Price, direction, and trading strategy metrics
   plotting.py           Forecast, equity curve, and loss plots
-  prediction_validation.py          Inference on unseen dates — evaluates both checkpoints, auto-rebuilds sentiment
+  prediction_validation.py  Historical back-test on held-out dates — requires ground-truth closes, end date must be ≤ today
+  predict.py            Daily live signal — fetches today's data, runs inference, prints BUY/HOLD or SELL/CASH for tomorrow
 
 Directories
   checkpoints/          Saved model weights (.pt)
@@ -38,13 +39,18 @@ Directories
 
 ## Workflow
 
+### One-time setup
+
 1. **Configure** — set ticker, dates, quantile level, lookback window, epochs, and patience via `config.py --config` or edit `config.json`
-2. **Fetch data** — `train.py` pulls OHLCV from Yahoo Finance automatically
-3. **Fetch news** (optional) — `fetch_news.py` pulls articles from Alpha Vantage
-4. **Score sentiment** (optional) — `sentiment_evaluation.py` scores articles with VADER and aggregates daily
-5. **Build features** — technical indicators computed in `features.py` during training
-6. **Train** — CNN-LSTM trains on configurable lookback windows (default 60 days) predicting next-day log return; produces `training_sentiment_*.csv`
-7. **Evaluate** — `prediction_validation.py` evaluates on held-out data; produces `prediction_sentiment_*.csv` for sentiment runs
+2. **Fetch news** (optional, for `with_sentiment` model) — `fetch_news.py` pulls articles from Alpha Vantage; requires `NEWSAPI_KEY`
+3. **Train** — `train.py` fetches OHLCV automatically, scores sentiment, and trains both `no_sentiment` and `with_sentiment` checkpoints
+4. **Back-test** — `prediction_validation.py` evaluates both models on held-out historical dates and writes `eval_outputs/{tag}/eval_predictions.csv`; `predict.py` reads this file to calibrate its signal threshold
+
+> **Note:** Step 4 is required before running `predict.py` for a meaningful threshold. Without it, the threshold falls back to `0.0` (any positive prediction → BUY).
+
+### Daily (post-market-close)
+
+5. **Live signal** — `predict.py` fetches today's OHLCV and news, runs inference, and prints a BUY/HOLD or SELL/CASH signal for the next trading day
 
 ## Commands
 
@@ -60,12 +66,17 @@ python config.py --show
 # To change ticker or date range, run: python config.py --config
 python train.py
 
-# Evaluate both models on unseen data (outputs to eval_outputs/no_sentiment/ and eval_outputs/with_sentiment/)
+# Back-test both models on held-out historical data (end date must be ≤ today)
+# Outputs to eval_outputs/no_sentiment/ and eval_outputs/with_sentiment/
 python prediction_validation.py                          # defaults to 1 month after training end
-python prediction_validation.py --range 30d              # predict 30 days from training end
-python prediction_validation.py --range 4w               # predict 4 weeks from training end
-python prediction_validation.py --range 3m               # predict 3 months from training end
-python prediction_validation.py --range 2026-06-15       # predict until specific date
+python prediction_validation.py --range 30d              # 30 days from training end
+python prediction_validation.py --range 4w               # 4 weeks from training end
+python prediction_validation.py --range 3m               # 3 months from training end
+python prediction_validation.py --range 2024-06-15       # up to a specific past date
+
+# Generate next-day trading signal (run after market close each day)
+python predict.py                   # uses with_sentiment checkpoint
+python predict.py --no-sentiment    # uses no_sentiment checkpoint
 
 # Fetch news from Alpha Vantage (requires NEWSAPI_KEY)
 python fetch_news.py --ticker AAPL --time-from 20190401T0000 --time-to 20221101T0000
@@ -94,7 +105,7 @@ python -m pytest tests/ -v
 
 `config.json` > dataclass defaults in `config.py`
 
-> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range` to control the prediction window.
+> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range` to control the back-test window; the end date must be ≤ today since it requires real close prices for comparison. For a forward-looking signal use `predict.py` instead.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
