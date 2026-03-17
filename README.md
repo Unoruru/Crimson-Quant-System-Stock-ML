@@ -25,7 +25,7 @@ Sentiment
 Evaluation
   metrics.py            Price, direction, and trading strategy metrics
   plotting.py           Forecast, equity curve, and loss plots
-  predicate.py          Inference on unseen dates — evaluates both checkpoints, auto-rebuilds sentiment
+  prediction_validation.py          Inference on unseen dates — evaluates both checkpoints, auto-rebuilds sentiment
 
 Directories
   checkpoints/          Saved model weights (.pt)
@@ -44,7 +44,7 @@ Directories
 4. **Score sentiment** (optional) — `sentiment_evaluation.py` scores articles with VADER and aggregates daily
 5. **Build features** — technical indicators computed in `features.py` during training
 6. **Train** — CNN-LSTM trains on configurable lookback windows (default 60 days) predicting next-day log return; produces `training_sentiment_*.csv`
-7. **Evaluate** — `predicate.py` evaluates on held-out data; produces `prediction_sentiment_*.csv` for sentiment runs
+7. **Evaluate** — `prediction_validation.py` evaluates on held-out data; produces `prediction_sentiment_*.csv` for sentiment runs
 
 ## Commands
 
@@ -61,11 +61,11 @@ python config.py --show
 python train.py
 
 # Evaluate both models on unseen data (outputs to eval_outputs/no_sentiment/ and eval_outputs/with_sentiment/)
-python predicate.py                          # defaults to 1 month after training end
-python predicate.py --range 30d              # predict 30 days from training end
-python predicate.py --range 4w               # predict 4 weeks from training end
-python predicate.py --range 3m               # predict 3 months from training end
-python predicate.py --range 2026-06-15       # predict until specific date
+python prediction_validation.py                          # defaults to 1 month after training end
+python prediction_validation.py --range 30d              # predict 30 days from training end
+python prediction_validation.py --range 4w               # predict 4 weeks from training end
+python prediction_validation.py --range 3m               # predict 3 months from training end
+python prediction_validation.py --range 2026-06-15       # predict until specific date
 
 # Fetch news from Alpha Vantage (requires NEWSAPI_KEY)
 python fetch_news.py --ticker AAPL --time-from 20190401T0000 --time-to 20221101T0000
@@ -94,7 +94,7 @@ python -m pytest tests/ -v
 
 `config.json` > dataclass defaults in `config.py`
 
-> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `predicate.py` accepts `--range` to control the prediction window.
+> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range` to control the prediction window.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
