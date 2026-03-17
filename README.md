@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Crimson Quant System
 
 CNN-LSTM stock price prediction with optional news sentiment, quantile-based trading strategy.
@@ -57,9 +56,9 @@ pip install -r requirements.txt
 python config.py --config
 python config.py --show
 
-# Train (uses config.json defaults, or override via CLI)
+# Train (reads ticker and date range from config.json)
+# To change ticker or date range, run: python config.py --config
 python train.py
-python train.py --ticker MSFT --start 2020-01-01 --end 2023-01-01
 
 # Evaluate both models on unseen data (outputs to eval_outputs/no_sentiment/ and eval_outputs/with_sentiment/)
 python predicate.py                          # defaults to 1 month after training end
@@ -93,7 +92,9 @@ python -m pytest tests/ -v
 
 ## Configuration Priority
 
-CLI args > `config.json` > dataclass defaults in `config.py`
+`config.json` > dataclass defaults in `config.py`
+
+> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker and dates. `predicate.py` accepts `--range` to control the prediction window.
 
 | Field | Type | Default | Description |
 |---|---|---|---|
@@ -101,6 +102,3 @@ CLI args > `config.json` > dataclass defaults in `config.py`
 | `start` | string | `2019-04-01` | Training period start date (YYYY-MM-DD) |
 | `end` | string | `2022-11-01` | Training period end date (YYYY-MM-DD) |
 | `quantile_level` | float | `0.70` | Percentile threshold for the long-only trading strategy (0 < x < 1) |
-=======
-*** Crimson Quant System ***
->>>>>>> origin/PolarBear

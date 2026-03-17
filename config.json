@@ -1,0 +1,6 @@
+{
+  "ticker": "AMZN",
+  "start": "2023-01-01",
+  "end": "2025-06-30",
+  "quantile_level": 0.7
+}
