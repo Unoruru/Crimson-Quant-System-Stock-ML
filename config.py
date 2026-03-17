@@ -41,7 +41,7 @@ class Config:
     device: str = "cuda" if torch.cuda.is_available() else "cpu"
     seed: int = 999
 
-    _CONFIG_FIELDS = ("ticker", "start", "end", "quantile_level", "epochs", "patience")
+    _CONFIG_FIELDS = ("ticker", "start", "end", "quantile_level", "lookback", "epochs", "patience")
 
     @classmethod
     def load(cls) -> "Config":
@@ -148,6 +148,7 @@ def _show_config():
     print(f"  Start date:     {cfg.start}")
     print(f"  End date:       {cfg.end}")
     print(f"  Quantile level: {cfg.quantile_level}")
+    print(f"  Lookback window: {cfg.lookback} days")
     print(f"  Max epochs:     {cfg.epochs}")
     print(f"  Patience:       {cfg.patience}")
 
