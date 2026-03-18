@@ -1,56 +1,94 @@
 # Crimson Quant System
 
-CNN-LSTM stock price prediction with optional news sentiment, quantile-based trading strategy.
+A stock price prediction system that combines a CNN-LSTM deep learning model with optional
+news sentiment analysis to generate daily BUY/HOLD or SELL/CASH trading signals. The model
+is trained on historical OHLCV data and 26 technical indicators, with an optional 27th feature
+derived from VADER sentiment scores on Alpha Vantage news articles. Signals are produced by
+comparing the model's next-day log-return forecast against a quantile threshold calibrated on
+a held-out back-test period.
 
-## Project Structure
+## Features
 
-```
-Config
-  config.py             Configuration dataclass, CLI config tool, feature list
-  config.json           Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
+- CNN-LSTM architecture: two Conv1d layers feed into a 2-layer LSTM with a dense regression head
+- 26 technical indicators computed automatically from raw OHLCV data (SMA, EMA, RSI, MACD, momentum, volatility)
+- Optional VADER news sentiment as a 27th input feature, fetched from Alpha Vantage
+- Quantile-based long-only trading strategy with configurable threshold
+- Parallel no-sentiment and with-sentiment experiments trained and evaluated in a single run
+- Historical back-test against real close prices with equity-curve and forecast plots
+- Daily live signal mode: fetches today's data, runs inference, prints signal for the next trading day
 
-Training pipeline
-  train.py              Training entry point — training loop, early stopping, prediction helpers
-  model.py              CNNLSTMRegressor (Conv1d → LSTM → Dense)
-  data_loader.py        Windowed dataset, scaler, train/val/test split
-  features.py           Technical indicator computation, sentiment loader
+## How It Works
 
-Data fetching
-  stock_data_fetcher.py Yahoo Finance OHLCV fetcher via yfinance
-  fetch_news.py         News fetching from Alpha Vantage API (pagination, chunked date ranges)
+The model (`CNNLSTMRegressor`) applies two Conv1d layers (64 channels, kernel size 5) followed
+by batch normalization and ReLU activations to extract local patterns from a 60-day sliding
+window of feature vectors. The output is passed through a 2-layer LSTM (96 hidden units) to
+capture sequential dependencies, then through a dense head (Linear → ReLU → Dropout(0.2) →
+Linear) that produces a single next-day log-return forecast. Training uses HuberLoss with AdamW
+and early stopping on validation loss.
 
-Sentiment
-  sentiment_evaluation.py  VADER sentiment scoring, daily aggregation, training/prediction CSV output
+The feature set covers five categories: raw OHLCV, price and volume derivatives (log return,
+high-low spread, open-close change, gap), moving averages (SMA 5/10/20/50, EMA 12/26),
+momentum indicators (3-day, 5-day, 10-day momentum, RSI-14), and volatility (5-day, 10-day
+rolling std). When sentiment is enabled, a daily VADER compound score is appended as a 27th
+feature, aligned by date to the OHLCV series.
 
-Evaluation & Signals
-  metrics.py            Price, direction, and trading strategy metrics
-  plotting.py           Forecast, equity curve, and loss plots
-  prediction_validation.py  Historical back-test on held-out dates — requires ground-truth closes, end date must be ≤ today
-  predict.py            Daily live signal — fetches today's data, runs inference, prints BUY/HOLD or SELL/CASH for tomorrow
+The trading strategy converts the model's continuous log-return forecast into a binary signal.
+After a back-test run, the system computes the `quantile_level` percentile of forecast values
+on the held-out period and uses that value as the long-entry threshold: forecasts above the
+threshold generate a BUY signal for the next day; all others produce HOLD or SELL/CASH. The
+threshold is stored in `eval_outputs/{tag}/eval_predictions.csv` and read automatically by
+`predict.py` at runtime.
 
-Directories
-  checkpoints/          Saved model weights (.pt)
-  data/                 Raw CSVs, sentiment scores, news articles
-  eval_outputs/         Evaluation results on held-out period
-  my_fig_no_sentiment/  Plots from no-sentiment experiment
-  my_fig_with_sentiment/ Plots from sentiment experiment
-  tests/                pytest test suite
+## Prerequisites
+
+- Python 3.10 or later
+- pip
+- An Alpha Vantage API key (`NEWSAPI_KEY`) — required only for the news sentiment pipeline;
+  price data is fetched from Yahoo Finance via yfinance and requires no key
+
+## Quick Start
+
+```bash
+# 1. Install dependencies
+pip install -r requirements.txt
+
+# 2. Set API key (required for sentiment; skip if using no-sentiment model only)
+cp .env.example .env          # then open .env and set NEWSAPI_KEY=your_actual_api_key
+
+# 3. Configure ticker and date range
+python config.py --config
+
+# 4. Train both experiments
+python train.py
+
+# 5. Back-test and calibrate threshold
+python prediction_validation.py
+
+# 6. Generate tomorrow's signal
+python predict.py
 ```
 
 ## Workflow
 
 ### One-time setup
 
-1. **Configure** — set ticker, dates, quantile level, lookback window, epochs, and patience via `config.py --config` or edit `config.json`
-2. **Fetch news** (optional, for `with_sentiment` model) — `fetch_news.py` pulls articles from Alpha Vantage; requires `NEWSAPI_KEY`
-3. **Train** — `train.py` fetches OHLCV automatically, scores sentiment, and trains both `no_sentiment` and `with_sentiment` checkpoints
-4. **Back-test** — `prediction_validation.py` evaluates both models on held-out historical dates and writes `eval_outputs/{tag}/eval_predictions.csv`; `predict.py` reads this file to calibrate its signal threshold
+1. **Configure** — set ticker, dates, quantile level, lookback window, epochs, and patience
+   via `config.py --config` or edit `config.json`
+2. **Fetch news** (optional, for `with_sentiment` model) — `fetch_news.py` pulls articles from
+   Alpha Vantage; requires `NEWSAPI_KEY`
+3. **Train** — `train.py` fetches OHLCV automatically, scores sentiment, and trains both
+   `no_sentiment` and `with_sentiment` checkpoints
+4. **Back-test** — `prediction_validation.py` evaluates both models on held-out historical
+   dates and writes `eval_outputs/{tag}/eval_predictions.csv`; `predict.py` reads this file
+   to calibrate its signal threshold
 
-> **Note:** Step 4 is required before running `predict.py` for a meaningful threshold. Without it, the threshold falls back to `0.0` (any positive prediction → BUY).
+> **Note:** Step 4 is required before running `predict.py` for a meaningful threshold. Without
+> it, the threshold falls back to `0.0` (any positive prediction → BUY).
 
 ### Daily (post-market-close)
 
-5. **Live signal** — `predict.py` fetches today's OHLCV and news, runs inference, and prints a BUY/HOLD or SELL/CASH signal for the next trading day
+5. **Live signal** — `predict.py` fetches today's OHLCV and news, runs inference, and prints
+   a BUY/HOLD or SELL/CASH signal for the next trading day
 
 ## Commands
 
@@ -88,6 +126,89 @@ python -c "from sentiment_evaluation import evaluate_and_save_sentiment; evaluat
 python -m pytest tests/ -v
 ```
 
+## Example Output
+
+Running `python predict.py` after a completed back-test prints a signal block similar to:
+
+```
+Ticker:     AAPL
+Date:       2024-03-18
+Model:      with_sentiment
+Forecast:   +0.0031  (log return)
+Threshold:  +0.0018  (70th percentile from back-test)
+
+Signal:     BUY / HOLD
+```
+
+When the forecast falls below the threshold:
+
+```
+Ticker:     AAPL
+Date:       2024-03-18
+Model:      with_sentiment
+Forecast:   -0.0012  (log return)
+Threshold:  +0.0018  (70th percentile from back-test)
+
+Signal:     SELL / CASH
+```
+
+## Configuration
+
+Configuration is read from `config.json`. Values not present in `config.json` fall back to the
+dataclass defaults in `config.py`.
+
+**Priority:** `config.json` > dataclass defaults in `config.py`
+
+> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set
+> ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range`
+> to control the back-test window; the end date must be ≤ today since it requires real close
+> prices for comparison. For a forward-looking signal use `predict.py` instead.
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `ticker` | string | `AAPL` | Stock ticker symbol |
+| `start` | string | `2019-04-01` | Training period start date (YYYY-MM-DD) |
+| `end` | string | `2022-11-01` | Training period end date (YYYY-MM-DD) |
+| `quantile_level` | float | `0.70` | Percentile threshold for the long-only trading strategy (0 < x < 1) |
+| `lookback` | int | `60` | Sliding window size in days used to build each training sample |
+| `epochs` | int | `300` | Maximum training epochs |
+| `patience` | int | `30` | Early-stopping patience (epochs without val-loss improvement before stopping) |
+
+## Project Structure
+
+```
+Config
+  config.py             Configuration dataclass, CLI config tool, feature list
+  config.json           Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
+
+Training pipeline
+  train.py              Training entry point — training loop, early stopping, prediction helpers
+  model.py              CNNLSTMRegressor (Conv1d → LSTM → Dense)
+  data_loader.py        Windowed dataset, scaler, train/val/test split
+  features.py           Technical indicator computation, sentiment loader
+
+Data fetching
+  stock_data_fetcher.py Yahoo Finance OHLCV fetcher via yfinance
+  fetch_news.py         News fetching from Alpha Vantage API (pagination, chunked date ranges)
+
+Sentiment
+  sentiment_evaluation.py  VADER sentiment scoring, daily aggregation, training/prediction CSV output
+
+Evaluation & Signals
+  metrics.py            Price, direction, and trading strategy metrics
+  plotting.py           Forecast, equity curve, and loss plots
+  prediction_validation.py  Historical back-test on held-out dates — requires ground-truth closes, end date must be ≤ today
+  predict.py            Daily live signal — fetches today's data, runs inference, prints BUY/HOLD or SELL/CASH for tomorrow
+
+Directories
+  checkpoints/          Saved model weights (.pt)
+  data/                 Raw CSVs, sentiment scores, news articles
+  eval_outputs/         Evaluation results on held-out period
+  my_fig_no_sentiment/  Plots from no-sentiment experiment
+  my_fig_with_sentiment/ Plots from sentiment experiment
+  tests/                pytest test suite
+```
+
 ## Environment Variables
 
 1. Copy `.env.example` to `.env`:
@@ -100,19 +221,3 @@ python -m pytest tests/ -v
    ```
 
 > `.env` is git-ignored and will not be pushed to the repository.
-
-## Configuration Priority
-
-`config.json` > dataclass defaults in `config.py`
-
-> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range` to control the back-test window; the end date must be ≤ today since it requires real close prices for comparison. For a forward-looking signal use `predict.py` instead.
-
-| Field | Type | Default | Description |
-|---|---|---|---|
-| `ticker` | string | `AAPL` | Stock ticker symbol |
-| `start` | string | `2019-04-01` | Training period start date (YYYY-MM-DD) |
-| `end` | string | `2022-11-01` | Training period end date (YYYY-MM-DD) |
-| `quantile_level` | float | `0.70` | Percentile threshold for the long-only trading strategy (0 < x < 1) |
-| `lookback` | int | `60` | Sliding window size in days used to build each training sample |
-| `epochs` | int | `300` | Maximum training epochs |
-| `patience` | int | `30` | Early-stopping patience (epochs without val-loss improvement before stopping) |
