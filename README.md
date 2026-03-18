@@ -179,28 +179,27 @@ dataclass defaults in `config.py`.
 ```
 Crimson-Qunat-System-Stock-ML/
 │
-│  # Configuration
-├── config.py                    Configuration dataclass, CLI config tool, feature list
-├── config.json                  Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
-│
-│  # Training pipeline
+│  # CLI entry points (run from project root)
 ├── train.py                     Training entry point — training loop, early stopping, prediction helpers
-├── model.py                     CNNLSTMRegressor (Conv1d → LSTM → Dense)
-├── data_loader.py               Windowed dataset, scaler, train/val/test split
-├── features.py                  Technical indicator computation, sentiment loader
-│
-│  # Data fetching
-├── stock_data_fetcher.py        Yahoo Finance OHLCV fetcher via yfinance
-├── fetch_news.py                News fetching from Alpha Vantage API (pagination, chunked date ranges)
-│
-│  # Sentiment
-├── sentiment_evaluation.py      VADER sentiment scoring, daily aggregation, training/prediction CSV output
-│
-│  # Evaluation & signals
-├── metrics.py                   Price, direction, and trading strategy metrics
-├── plotting.py                  Forecast, equity curve, and loss plots
-├── prediction_validation.py     Historical back-test on held-out dates (end date must be ≤ today)
 ├── predict.py                   Daily live signal — BUY/HOLD or SELL/CASH for tomorrow
+├── prediction_validation.py     Historical back-test on held-out dates (end date must be ≤ today)
+│
+│  # Installable library package
+├── crimson_quant/
+│   ├── __init__.py
+│   ├── config.py                Configuration dataclass, CLI config tool, feature list
+│   ├── model.py                 CNNLSTMRegressor (Conv1d → LSTM → Dense)
+│   ├── data_loader.py           Windowed dataset, scaler, train/val/test split
+│   ├── features.py              Technical indicator computation, sentiment loader
+│   ├── stock_data_fetcher.py    Yahoo Finance OHLCV fetcher via yfinance
+│   ├── fetch_news.py            News fetching from Alpha Vantage API (pagination, chunked date ranges)
+│   ├── sentiment_evaluation.py  VADER sentiment scoring, daily aggregation, training/prediction CSV output
+│   ├── metrics.py               Price, direction, and trading strategy metrics
+│   └── plotting.py              Forecast, equity curve, and loss plots
+│
+│  # Configuration
+├── config.json                  Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
+├── pyproject.toml               Package metadata and build configuration
 │
 │  # Tests
 ├── tests/

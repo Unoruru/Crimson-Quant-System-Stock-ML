@@ -16,14 +16,14 @@ from math import exp
 import numpy as np
 import torch
 
-from config import Config, QUANTILE_LEVEL
-from data_loader import _merge_sentiment
-from features import add_indicators
-from fetch_news import fetch_news_for_period
-from metrics import apply_affine_calibration
-from model import load_checkpoint
-from sentiment_evaluation import evaluate_and_save_sentiment
-from stock_data_fetcher import get_stock_data
+from crimson_quant.config import Config, QUANTILE_LEVEL
+from crimson_quant.data_loader import _merge_sentiment
+from crimson_quant.features import add_indicators
+from crimson_quant.fetch_news import fetch_news_for_period
+from crimson_quant.metrics import apply_affine_calibration
+from crimson_quant.model import load_checkpoint
+from crimson_quant.sentiment_evaluation import evaluate_and_save_sentiment
+from crimson_quant.stock_data_fetcher import get_stock_data
 
 # Extra CALENDAR days of OHLCV history fetched beyond the lookback window so
 # rolling indicators have enough history to warm up before the inference window.

@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "crimson-quant"
+version = "0.1.0"
+description = "CNN-LSTM stock prediction system with optional sentiment analysis"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy", "pandas", "matplotlib", "torch",
+    "yfinance", "requests", "nltk",
+    "python-dateutil", "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

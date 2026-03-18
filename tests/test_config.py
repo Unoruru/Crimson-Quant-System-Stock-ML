@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from config import Config
+from crimson_quant.config import Config
 
 
 class TestConfigDefaults(unittest.TestCase):
@@ -27,21 +27,21 @@ class TestConfigLoad(unittest.TestCase):
     def test_load_epochs_from_json(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._write_config(tmp, {"epochs": 500})
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.epochs == 500
 
     def test_load_patience_from_json(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._write_config(tmp, {"patience": 50})
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.patience == 50
 
     def test_unknown_fields_ignored(self):
         with tempfile.TemporaryDirectory() as tmp:
             self._write_config(tmp, {"epochs": 100, "unknown_field": 99})
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.epochs == 100
         assert not hasattr(cfg, "unknown_field")
@@ -49,7 +49,7 @@ class TestConfigLoad(unittest.TestCase):
     def test_missing_json_uses_defaults(self):
         with tempfile.TemporaryDirectory() as tmp:
             # no config.json written
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.epochs == 300
         assert cfg.patience == 30
@@ -65,7 +65,7 @@ class TestConfigLookbackDefault(unittest.TestCase):
             path = os.path.join(tmp, "config.json")
             with open(path, "w") as f:
                 json.dump({"lookback": 90}, f)
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.lookback == 90
 
@@ -74,7 +74,7 @@ class TestConfigLookbackDefault(unittest.TestCase):
             path = os.path.join(tmp, "config.json")
             with open(path, "w") as f:
                 json.dump({"epochs": 100}, f)
-            with patch("config.os.path.dirname", return_value=tmp):
+            with patch("crimson_quant.config.os.path.dirname", return_value=tmp):
                 cfg = Config.load()
         assert cfg.lookback == 60
 
@@ -82,9 +82,9 @@ class TestConfigLookbackDefault(unittest.TestCase):
 class TestInteractiveConfigLookback(unittest.TestCase):
     def _run_interactive(self, inputs, tmp_dir):
         """Helper: run _interactive_config with mocked stdin and config path."""
-        from config import _interactive_config
+        from crimson_quant.config import _interactive_config
         with patch("builtins.input", side_effect=inputs), \
-             patch("config.os.path.dirname", return_value=tmp_dir):
+             patch("crimson_quant.config.os.path.dirname", return_value=tmp_dir):
             _interactive_config()
         config_path = os.path.join(tmp_dir, "config.json")
         with open(config_path) as f:

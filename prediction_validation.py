@@ -15,9 +15,9 @@ import torch
 from dateutil.relativedelta import relativedelta
 from torch.utils.data import DataLoader
 
-from model import load_checkpoint
-from data_loader import load_data, make_windows, WindowDataset
-from metrics import (
+from crimson_quant.model import load_checkpoint
+from crimson_quant.data_loader import load_data, make_windows, WindowDataset
+from crimson_quant.metrics import (
     compute_price_metrics,
     compute_direction_metrics,
     compute_trading_metrics,
@@ -28,11 +28,11 @@ from metrics import (
     logret_to_next_close,
     write_metrics_report,
 )
-from plotting import plot_forecast_eval, plot_strategy_equity
-from config import QUANTILE_LEVEL, Config
+from crimson_quant.plotting import plot_forecast_eval, plot_strategy_equity
+from crimson_quant.config import QUANTILE_LEVEL, Config
 from train import predict_all_logret
-from sentiment_evaluation import evaluate_and_save_sentiment
-from fetch_news import fetch_news_for_period
+from crimson_quant.sentiment_evaluation import evaluate_and_save_sentiment
+from crimson_quant.fetch_news import fetch_news_for_period
 
 # =========================================================
 # Config

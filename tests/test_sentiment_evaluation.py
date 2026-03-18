@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from sentiment_evaluation import (
+from crimson_quant.sentiment_evaluation import (
     _aggregate_daily_sentiment,
     build_daily_sentiment,
     score_articles,

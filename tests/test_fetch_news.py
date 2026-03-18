@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from fetch_news import (
+from crimson_quant.fetch_news import (
     _safe_float,
     default_filename,
     feed_to_simple_dataframe,
@@ -140,7 +140,7 @@ class TestDefaultFilename:
 
 
 class TestFetchNews:
-    @patch("fetch_news.requests.get")
+    @patch("crimson_quant.fetch_news.requests.get")
     def test_successful_api_call(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"feed": [{"title": "Test"}]}
@@ -154,7 +154,7 @@ class TestFetchNews:
         with pytest.raises(ValueError, match="API_KEY is empty"):
             fetch_news(api_key="")
 
-    @patch("fetch_news.requests.get")
+    @patch("crimson_quant.fetch_news.requests.get")
     def test_raises_on_api_error_message(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"Error Message": "Invalid API call"}
@@ -164,7 +164,7 @@ class TestFetchNews:
         with pytest.raises(RuntimeError, match="Alpha Vantage error"):
             fetch_news(api_key="test_key")
 
-    @patch("fetch_news.requests.get")
+    @patch("crimson_quant.fetch_news.requests.get")
     def test_raises_on_http_error(self, mock_get):
         import requests
 
@@ -179,7 +179,7 @@ class TestFetchNews:
 
 
 class TestFetchNewsChunked:
-    @patch("fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.fetch_news")
     def test_single_chunk_for_short_range(self, mock_fetch):
         mock_fetch.return_value = {"feed": [{"title": "A"}]}
         result = fetch_news_chunked(
@@ -190,7 +190,7 @@ class TestFetchNewsChunked:
         assert len(result) == 1
         assert mock_fetch.call_count == 1
 
-    @patch("fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.fetch_news")
     def test_multiple_chunks_for_long_range(self, mock_fetch):
         mock_fetch.return_value = {"feed": [{"title": "A"}]}
         result = fetch_news_chunked(
@@ -202,7 +202,7 @@ class TestFetchNewsChunked:
         assert mock_fetch.call_count == 4
         assert len(result) == 4
 
-    @patch("fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.fetch_news")
     def test_no_time_range_single_call(self, mock_fetch):
         mock_fetch.return_value = {"feed": [{"title": "A"}]}
         result = fetch_news_chunked(api_key="key")
@@ -226,8 +226,8 @@ class TestSafeFloat:
 class TestFetchNewsForPeriod:
     """Tests for fetch_news_for_period (single-request, minimal CSV)."""
 
-    @patch("fetch_news.fetch_news")
-    @patch("fetch_news.API_KEY", "test_key")
+    @patch("crimson_quant.fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.API_KEY", "test_key")
     def test_single_api_call(self, mock_fetch, tmp_path):
         """Calls fetch_news once for the full range (not chunked)."""
         out_dir = str(tmp_path)
@@ -244,8 +244,8 @@ class TestFetchNewsForPeriod:
         assert call_kwargs["time_from"] == "20220401T0000"
         assert call_kwargs["time_to"] == "20221101T2359"
 
-    @patch("fetch_news.fetch_news")
-    @patch("fetch_news.API_KEY", "test_key")
+    @patch("crimson_quant.fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.API_KEY", "test_key")
     def test_complete_data_no_api_call(self, mock_fetch, tmp_path):
         """Full-range raw CSV exists -> no API call made."""
         out_dir = str(tmp_path)
@@ -262,8 +262,8 @@ class TestFetchNewsForPeriod:
         mock_fetch.assert_not_called()
         assert result == complete_path
 
-    @patch("fetch_news.fetch_news")
-    @patch("fetch_news.API_KEY", "test_key")
+    @patch("crimson_quant.fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.API_KEY", "test_key")
     def test_output_columns_are_date_and_headlines(self, mock_fetch, tmp_path):
         """Output CSV has 'date' and 'headlines' columns (not Date/Headline)."""
         out_dir = str(tmp_path)
@@ -281,8 +281,8 @@ class TestFetchNewsForPeriod:
         assert "headlines" in result_df.columns
         assert len(result_df) == 2
 
-    @patch("fetch_news.fetch_news")
-    @patch("fetch_news.API_KEY", "test_key")
+    @patch("crimson_quant.fetch_news.fetch_news")
+    @patch("crimson_quant.fetch_news.API_KEY", "test_key")
     def test_output_filename_uses_raw_tag(self, mock_fetch, tmp_path):
         """Output filename contains '_News_raw_' not '_News_AlphaVantage_'."""
         out_dir = str(tmp_path)
