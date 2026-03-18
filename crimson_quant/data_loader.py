@@ -7,9 +7,9 @@ import pandas as pd
 import torch
 from torch.utils.data import Dataset
 
-from config import SCALER_EPSILON
-from features import add_indicators, load_sentiment_daily
-from stock_data_fetcher import get_stock_data
+from .config import SCALER_EPSILON
+from .features import add_indicators, load_sentiment_daily
+from .stock_data_fetcher import get_stock_data
 
 
 class WindowDataset(Dataset):

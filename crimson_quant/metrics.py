@@ -5,7 +5,7 @@ import math
 
 import numpy as np
 
-from config import EPSILON, SCALER_EPSILON, ANNUALIZED_FACTOR, QUANTILE_LEVEL
+from .config import EPSILON, SCALER_EPSILON, ANNUALIZED_FACTOR, QUANTILE_LEVEL
 
 logger = logging.getLogger(__name__)
 

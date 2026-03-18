@@ -15,13 +15,13 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.amp import GradScaler
 
-from config import (
+from crimson_quant.config import (
     Config, BASE_FEATURES, SENTIMENT_FEATURES, TRAIN_RATIO, VAL_RATIO,
     LR_REDUCE_FACTOR, LR_REDUCE_PATIENCE, GRAD_CLIP_NORM, HUBER_DELTA, QUANTILE_LEVEL,
 )
-from data_loader import load_data, make_windows, WindowDataset, StandardScaler
-from model import CNNLSTMRegressor, save_checkpoint
-from metrics import (
+from crimson_quant.data_loader import load_data, make_windows, WindowDataset, StandardScaler
+from crimson_quant.model import CNNLSTMRegressor, save_checkpoint
+from crimson_quant.metrics import (
     compute_price_metrics,
     compute_direction_metrics,
     compute_trading_metrics,
@@ -31,7 +31,7 @@ from metrics import (
     logret_to_next_close,
     write_metrics_report,
 )
-from plotting import plot_forecasting_close, plot_strategy_equity, plot_losses
+from crimson_quant.plotting import plot_forecasting_close, plot_strategy_equity, plot_losses
 
 logging.basicConfig(
     level=logging.INFO,

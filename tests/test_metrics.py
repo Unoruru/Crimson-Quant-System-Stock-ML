@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pytest
 
-from metrics import (
+from crimson_quant.metrics import (
     rmse,
     fit_affine_calibration,
     apply_affine_calibration,

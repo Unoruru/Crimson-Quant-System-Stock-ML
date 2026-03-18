@@ -7,8 +7,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from config import Config, DENSE_HIDDEN
-from data_loader import StandardScaler
+from .config import Config, DENSE_HIDDEN
+from .data_loader import StandardScaler
 
 logger = logging.getLogger(__name__)
 

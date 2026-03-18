@@ -3,7 +3,7 @@
 import torch
 import pytest
 
-from model import CNNLSTMRegressor
+from crimson_quant.model import CNNLSTMRegressor
 
 
 class TestCNNLSTMRegressor:
