@@ -55,16 +55,19 @@ pip install -r requirements.txt
 # 2. Set API key (required for sentiment; skip if using no-sentiment model only)
 cp .env.example .env          # then open .env and set NEWSAPI_KEY=your_actual_api_key
 
-# 3. Configure ticker and date range
-python config.py --config
+# 3. Verify installation (all 106 tests should pass)
+pytest tests/
 
-# 4. Train both experiments
+# 4. Configure ticker and date range
+python -m crimson_quant.config --config
+
+# 5. Train both experiments
 python train.py
 
-# 5. Back-test and calibrate threshold
+# 6. Back-test and calibrate threshold
 python prediction_validation.py
 
-# 6. Generate tomorrow's signal
+# 7. Generate tomorrow's signal
 python predict.py
 ```
 
