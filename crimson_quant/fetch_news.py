@@ -15,7 +15,7 @@ import pandas as pd
 import requests
 from dotenv import load_dotenv
 
-from config import Config
+from .config import Config
 
 # ============================================================
 # Settings

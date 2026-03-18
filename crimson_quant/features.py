@@ -5,7 +5,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from config import EPSILON, RSI_WINDOW, MACD_SIGNAL_SPAN
+from .config import EPSILON, RSI_WINDOW, MACD_SIGNAL_SPAN
 
 
 def add_indicators(df: pd.DataFrame) -> pd.DataFrame:

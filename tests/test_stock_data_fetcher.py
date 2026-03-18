@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from stock_data_fetcher import get_stock_data
+from crimson_quant.stock_data_fetcher import get_stock_data
 
 
 class TestGetStockData:
@@ -23,7 +23,7 @@ class TestGetStockData:
             index=dates,
         )
 
-    @patch("stock_data_fetcher.yf.download")
+    @patch("crimson_quant.stock_data_fetcher.yf.download")
     def test_returns_dataframe(self, mock_download):
         mock_download.return_value = self._make_mock_df()
         df = get_stock_data("AAPL", "2023-01-01", "2023-06-30")
@@ -32,13 +32,13 @@ class TestGetStockData:
         assert "Close" in df.columns
         assert df.index.name == "Date"
 
-    @patch("stock_data_fetcher.yf.download")
+    @patch("crimson_quant.stock_data_fetcher.yf.download")
     def test_raises_on_empty(self, mock_download):
         mock_download.return_value = pd.DataFrame()
         with pytest.raises(ValueError, match="no data"):
             get_stock_data("INVALID", "2099-01-01", "2099-06-30")
 
-    @patch("stock_data_fetcher.yf.download")
+    @patch("crimson_quant.stock_data_fetcher.yf.download")
     def test_flattens_multiindex_columns(self, mock_download):
         df = self._make_mock_df()
         df.columns = pd.MultiIndex.from_tuples(

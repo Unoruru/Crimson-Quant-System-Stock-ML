@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_loader import WindowDataset, StandardScaler, make_windows
+from crimson_quant.data_loader import WindowDataset, StandardScaler, make_windows
 
 
 @pytest.fixture

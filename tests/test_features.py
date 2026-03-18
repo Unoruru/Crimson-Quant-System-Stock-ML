@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from features import add_indicators
+from crimson_quant.features import add_indicators
 
 
 @pytest.fixture
