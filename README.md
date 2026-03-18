@@ -177,36 +177,49 @@ dataclass defaults in `config.py`.
 ## Project Structure
 
 ```
-Config
-  config.py             Configuration dataclass, CLI config tool, feature list
-  config.json           Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
-
-Training pipeline
-  train.py              Training entry point — training loop, early stopping, prediction helpers
-  model.py              CNNLSTMRegressor (Conv1d → LSTM → Dense)
-  data_loader.py        Windowed dataset, scaler, train/val/test split
-  features.py           Technical indicator computation, sentiment loader
-
-Data fetching
-  stock_data_fetcher.py Yahoo Finance OHLCV fetcher via yfinance
-  fetch_news.py         News fetching from Alpha Vantage API (pagination, chunked date ranges)
-
-Sentiment
-  sentiment_evaluation.py  VADER sentiment scoring, daily aggregation, training/prediction CSV output
-
-Evaluation & Signals
-  metrics.py            Price, direction, and trading strategy metrics
-  plotting.py           Forecast, equity curve, and loss plots
-  prediction_validation.py  Historical back-test on held-out dates — requires ground-truth closes, end date must be ≤ today
-  predict.py            Daily live signal — fetches today's data, runs inference, prints BUY/HOLD or SELL/CASH for tomorrow
-
-Directories
-  checkpoints/          Saved model weights (.pt)
-  data/                 Raw CSVs, sentiment scores, news articles
-  eval_outputs/         Evaluation results on held-out period
-  my_fig_no_sentiment/  Plots from no-sentiment experiment
-  my_fig_with_sentiment/ Plots from sentiment experiment
-  tests/                pytest test suite
+Crimson-Qunat-System-Stock-ML/
+│
+│  # Configuration
+├── config.py                    Configuration dataclass, CLI config tool, feature list
+├── config.json                  Persistent overrides (ticker, start, end, quantile_level, lookback, epochs, patience)
+│
+│  # Training pipeline
+├── train.py                     Training entry point — training loop, early stopping, prediction helpers
+├── model.py                     CNNLSTMRegressor (Conv1d → LSTM → Dense)
+├── data_loader.py               Windowed dataset, scaler, train/val/test split
+├── features.py                  Technical indicator computation, sentiment loader
+│
+│  # Data fetching
+├── stock_data_fetcher.py        Yahoo Finance OHLCV fetcher via yfinance
+├── fetch_news.py                News fetching from Alpha Vantage API (pagination, chunked date ranges)
+│
+│  # Sentiment
+├── sentiment_evaluation.py      VADER sentiment scoring, daily aggregation, training/prediction CSV output
+│
+│  # Evaluation & signals
+├── metrics.py                   Price, direction, and trading strategy metrics
+├── plotting.py                  Forecast, equity curve, and loss plots
+├── prediction_validation.py     Historical back-test on held-out dates (end date must be ≤ today)
+├── predict.py                   Daily live signal — BUY/HOLD or SELL/CASH for tomorrow
+│
+│  # Tests
+├── tests/
+│   ├── test_config.py
+│   ├── test_data_loader.py
+│   ├── test_features.py
+│   ├── test_fetch_news.py
+│   ├── test_metrics.py
+│   ├── test_model.py
+│   ├── test_prediction_validation.py
+│   ├── test_sentiment_evaluation.py
+│   └── test_stock_data_fetcher.py
+│
+│  # Generated / output directories
+├── checkpoints/                 Saved model weights (.pt)
+├── data/                        Raw CSVs, sentiment scores, news articles
+├── eval_outputs/                Evaluation results on held-out period
+├── my_fig_no_sentiment/         Plots from no-sentiment experiment
+└── my_fig_with_sentiment/       Plots from sentiment experiment
 ```
 
 ## Environment Variables
