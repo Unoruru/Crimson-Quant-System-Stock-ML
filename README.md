@@ -76,9 +76,9 @@ python predict.py
 ### One-time setup
 
 1. **Configure** — set ticker, dates, quantile level, lookback window, epochs, and patience
-   via `config.py --config` or edit `config.json`
-2. **Fetch news** (optional, for `with_sentiment` model) — `fetch_news.py` pulls articles from
-   Alpha Vantage; requires `NEWSAPI_KEY`
+   via `python -m crimson_quant.config --config` or edit `config.json`
+2. **Fetch news** (optional, for `with_sentiment` model) — `python -m crimson_quant.fetch_news`
+   pulls articles from Alpha Vantage; requires `NEWSAPI_KEY`
 3. **Train** — `train.py` fetches OHLCV automatically, scores sentiment, and trains both
    `no_sentiment` and `with_sentiment` checkpoints
 4. **Back-test** — `prediction_validation.py` evaluates both models on held-out historical
@@ -86,7 +86,8 @@ python predict.py
    to calibrate its signal threshold
 
 > **Note:** Step 4 is required before running `predict.py` for a meaningful threshold. Without
-> it, the threshold falls back to `0.0` (any positive prediction → BUY).
+> it, the threshold falls back to `0.0` (any positive prediction → BUY). The threshold has a
+> minimum floor of `0.001` (0.1% daily log return) to prevent degenerate zero-threshold signals.
 
 ### Daily (post-market-close)
 
@@ -100,11 +101,11 @@ python predict.py
 pip install -r requirements.txt
 
 # Configure ticker, date range, quantile level, lookback window, epochs, and early-stopping patience (interactive or view current)
-python config.py --config
-python config.py --show
+python -m crimson_quant.config --config
+python -m crimson_quant.config --show
 
 # Train (reads ticker and date range from config.json)
-# To change ticker or date range, run: python config.py --config
+# To change ticker or date range, run: python -m crimson_quant.config --config
 python train.py
 
 # Back-test both models on held-out historical data (end date must be ≤ today)
@@ -120,7 +121,7 @@ python predict.py                   # uses with_sentiment checkpoint
 python predict.py --no-sentiment    # uses no_sentiment checkpoint
 
 # Fetch news from Alpha Vantage (requires NEWSAPI_KEY)
-python fetch_news.py --ticker AAPL --time-from 20190401T0000 --time-to 20221101T0000
+python -m crimson_quant.fetch_news --ticker AAPL --time-from 20190401T0000 --time-to 20221101T0000
 
 # Score articles and build daily sentiment CSV
 python -c "from sentiment_evaluation import evaluate_and_save_sentiment; evaluate_and_save_sentiment('data/AAPL_News_AlphaVantage_....csv', 'AAPL', '2019-04-01', '2022-11-01')"
@@ -162,7 +163,7 @@ dataclass defaults in `config.py`.
 
 **Priority:** `config.json` > dataclass defaults in `config.py`
 
-> **Note:** `train.py` reads from `config.json` only — use `python config.py --config` to set
+> **Note:** `train.py` reads from `config.json` only — use `python -m crimson_quant.config --config` to set
 > ticker, dates, lookback, epochs, and patience. `prediction_validation.py` accepts `--range`
 > to control the back-test window; the end date must be ≤ today since it requires real close
 > prices for comparison. For a forward-looking signal use `predict.py` instead.
@@ -220,8 +221,7 @@ Crimson-Qunat-System-Stock-ML/
 ├── checkpoints/                 Saved model weights (.pt)
 ├── data/                        Raw CSVs, sentiment scores, news articles
 ├── eval_outputs/                Evaluation results on held-out period
-├── my_fig_no_sentiment/         Plots from no-sentiment experiment
-└── my_fig_with_sentiment/       Plots from sentiment experiment
+└── training_outputs/           Training metrics and history per experiment
 ```
 
 ## Environment Variables

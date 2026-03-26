@@ -212,8 +212,8 @@ def run_experiment(cfg: Config, use_sentiment: bool, tag: str):
 
     sentiment_csv_path = None
     if use_sentiment:
-        from fetch_news import fetch_news_for_period
-        from sentiment_evaluation import evaluate_and_save_sentiment
+        from crimson_quant.fetch_news import fetch_news_for_period
+        from crimson_quant.sentiment_evaluation import evaluate_and_save_sentiment
 
         news_csv = None
         try:
@@ -358,28 +358,10 @@ def run_experiment(cfg: Config, use_sentiment: bool, tag: str):
         f"Q={metrics['Threshold_Quantile_%']:.0f}% | Thr={metrics['Threshold_Value']:.5f}"
     )
 
-    out_dir = f"my_fig_{tag}"
-    plot_forecasting_close(
-        dates_train=dates_train,
-        train_close=train_close,
-        dates_val=dates_val,
-        val_close=val_close,
-        val_pred=pred_close_val,
-        dates_test=dates_test,
-        test_close=true_close_test,
-        test_pred=pred_close_test,
-        metrics_text=metrics_text,
-        out_dir=out_dir,
-    )
-    plot_strategy_equity(
-        dates=dates_val,
-        strat_equity=strat_equity,
-        bh_equity=bh_equity,
-        out_dir=out_dir,
-    )
-    plot_losses(history, out_dir=out_dir)
-
+    out_dir = f"training_outputs/{tag}"
     os.makedirs(out_dir, exist_ok=True)
+    pd.DataFrame(history).to_csv(os.path.join(out_dir, "training_history.csv"), index=False)
+    plot_losses(history, out_dir=out_dir)
 
     write_metrics_report(
         metrics_txt_path=os.path.join(out_dir, "metrics.txt"),
@@ -401,20 +383,6 @@ def run_experiment(cfg: Config, use_sentiment: bool, tag: str):
             ("Test Price Metrics", price_metrics_test),
         ],
     )
-
-    pred_df = pd.DataFrame({
-        "Date": pd.to_datetime(dates_val),
-        "Today_Close": today_close_val,
-        "True_Close_next_day": true_close_val,
-        "Pred_Close_next_day": pred_close_val,
-        "True_LogRet": val_true_logret,
-        "Pred_LogRet": val_pred_logret,
-        "Pred_LogRet_Raw": val_pred_logret_raw,
-    })
-    pred_df["Abs_Error"] = np.abs(pred_df["Pred_Close_next_day"] - pred_df["True_Close_next_day"])
-    pred_df["True_Direction"] = np.sign(pred_df["True_Close_next_day"] - pred_df["Today_Close"])
-    pred_df["Pred_Direction"] = np.sign(pred_df["Pred_Close_next_day"] - pred_df["Today_Close"])
-    pred_df.to_csv(os.path.join(out_dir, "val_predictions.csv"), index=False)
 
 
 # ------------------------------------------------------------------

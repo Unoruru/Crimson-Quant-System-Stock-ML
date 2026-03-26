@@ -83,33 +83,7 @@ def pick_latest_file(pattern: str):
 
 
 def _resolve_calibration(meta: dict) -> dict:
-    """Use checkpoint calibration when available, otherwise fit from saved val predictions."""
-    if meta.get("has_calibration", False):
-        calibration = meta.get("calibration", {"slope": 1.0, "intercept": 0.0})
-        if is_safe_affine_calibration(calibration):
-            return calibration
-        print(f"[WARN] Ignoring unsafe checkpoint calibration: {calibration}")
-
-    tag = meta.get("tag")
-    if tag:
-        val_pred_path = os.path.join(f"my_fig_{tag}", "val_predictions.csv")
-        if os.path.exists(val_pred_path):
-            try:
-                pred_df = pd.read_csv(val_pred_path)
-                if {"True_LogRet", "Pred_LogRet"}.issubset(pred_df.columns):
-                    calibration = fit_affine_calibration(
-                        pred_df["True_LogRet"].to_numpy(),
-                        pred_df["Pred_LogRet"].to_numpy(),
-                    )
-                    print(
-                        "[INFO] Using fallback calibration from "
-                        f"{val_pred_path}: slope={calibration['slope']:.4f}, "
-                        f"intercept={calibration['intercept']:.5f}"
-                    )
-                    return calibration
-            except Exception as exc:
-                print(f"[WARN] Failed to derive fallback calibration from {val_pred_path}: {exc}")
-
+    """Use calibration embedded in checkpoint."""
     calibration = meta.get("calibration", {"slope": 1.0, "intercept": 0.0})
     if is_safe_affine_calibration(calibration):
         return calibration

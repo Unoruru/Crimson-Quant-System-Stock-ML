@@ -70,7 +70,12 @@ def _load_threshold(out_dir: str, quantile_level: float) -> float:
         vals = df["Pred_LogRet"].dropna().values
         if len(vals) == 0:
             return 0.0
-        return float(max(np.quantile(vals, quantile_level), 0.0))
+        # Minimum meaningful threshold: 0.1% daily log return.
+        # Prevents degenerate zero threshold when Q70% of predictions are negative
+        # (can happen when forward-looking calibration diverges from training-period calibration).
+        MIN_THRESHOLD = 0.001
+        raw_thresh = float(np.quantile(vals, quantile_level))
+        return float(max(raw_thresh, MIN_THRESHOLD))
     except Exception as exc:
         print(f"[WARN] Could not load threshold from '{csv_path}': {exc}; threshold = 0.0")
         return 0.0
