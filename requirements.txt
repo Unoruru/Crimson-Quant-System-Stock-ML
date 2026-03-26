@@ -8,4 +8,5 @@ nltk
 python-dateutil
 pytest
 python-dotenv
-
+seaborn
+scipy
