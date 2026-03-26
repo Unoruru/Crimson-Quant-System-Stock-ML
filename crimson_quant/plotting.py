@@ -5,6 +5,20 @@ import os
 import matplotlib.pyplot as plt
 
 
+def _tag_from_dir(out_dir: str) -> str:
+    """Derive experiment tag suffix from output directory.
+
+    e.g.  eval_outputs/no_sentiment  -> _nos
+          eval_outputs/with_sentiment -> _withs
+          training_outputs/no_sentiment -> _nos
+    """
+    if "/no_sentiment" in out_dir or "\\no_sentiment" in out_dir:
+        return "_nos"
+    if "/with_sentiment" in out_dir or "\\with_sentiment" in out_dir:
+        return "_withs"
+    return ""
+
+
 def plot_forecasting_close(
     dates_train,
     train_close,
@@ -19,6 +33,7 @@ def plot_forecasting_close(
 ) -> None:
     """Plot full and zoomed forecast charts."""
     os.makedirs(out_dir, exist_ok=True)
+    tag = _tag_from_dir(out_dir)
 
     plt.figure(figsize=(14, 6))
     plt.plot(dates_train, train_close, label="Train")
@@ -32,7 +47,7 @@ def plot_forecasting_close(
     plt.legend()
     plt.figtext(0.01, 0.005, metrics_text, ha="left", fontsize=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "forecast_full.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"forecast_full{tag}.png"), dpi=200)
     plt.close()
 
     plt.figure(figsize=(14, 6))
@@ -46,13 +61,14 @@ def plot_forecasting_close(
     plt.legend()
     plt.figtext(0.01, 0.005, metrics_text, ha="left", fontsize=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "forecast_zoom.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"forecast_zoom{tag}.png"), dpi=200)
     plt.close()
 
 
 def plot_strategy_equity(dates, strat_equity, bh_equity, out_dir: str = "my_fig") -> None:
     """Plot strategy equity curve vs buy-and-hold."""
     os.makedirs(out_dir, exist_ok=True)
+    tag = _tag_from_dir(out_dir)
     plt.figure(figsize=(14, 6))
     plt.plot(dates, strat_equity, label="Strategy Equity")
     plt.plot(dates, bh_equity, label="Buy & Hold Equity")
@@ -61,13 +77,14 @@ def plot_strategy_equity(dates, strat_equity, bh_equity, out_dir: str = "my_fig"
     plt.ylabel("Equity Curve")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "strategy_vs_buyhold.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"strategy_vs_buyhold{tag}.png"), dpi=200)
     plt.close()
 
 
 def plot_losses(history: dict, out_dir: str = "my_fig") -> None:
     """Plot training and validation loss curves."""
     os.makedirs(out_dir, exist_ok=True)
+    tag = _tag_from_dir(out_dir)
     plt.figure(figsize=(12, 5))
     plt.plot(history["train_loss"], label="train_loss")
     plt.plot(history["val_loss"], label="val_loss")
@@ -76,7 +93,7 @@ def plot_losses(history: dict, out_dir: str = "my_fig") -> None:
     plt.ylabel("Loss")
     plt.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "training_losses.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"training_losses{tag}.png"), dpi=200)
     plt.close()
 
 
@@ -91,6 +108,7 @@ def plot_forecast_eval(
 ) -> None:
     """Plot evaluation forecast charts (full with history + zoom)."""
     os.makedirs(out_dir, exist_ok=True)
+    tag = _tag_from_dir(out_dir)
 
     plt.figure(figsize=(14, 6))
     plt.plot(history_dates, history_close, label="History / Context")
@@ -102,7 +120,7 @@ def plot_forecast_eval(
     plt.legend()
     plt.figtext(0.01, 0.005, metrics_text, ha="left", fontsize=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "forecast_full.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"forecast_full{tag}.png"), dpi=200)
     plt.close()
 
     plt.figure(figsize=(14, 6))
@@ -114,5 +132,5 @@ def plot_forecast_eval(
     plt.legend()
     plt.figtext(0.01, 0.005, metrics_text, ha="left", fontsize=10)
     plt.tight_layout()
-    plt.savefig(os.path.join(out_dir, "forecast_zoom.png"), dpi=200)
+    plt.savefig(os.path.join(out_dir, f"forecast_zoom{tag}.png"), dpi=200)
     plt.close()
