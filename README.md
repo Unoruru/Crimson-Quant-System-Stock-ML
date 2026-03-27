@@ -41,39 +41,36 @@ threshold is stored in `eval_outputs/{tag}/eval_predictions.csv` and read automa
 
 ## Results
 
-The following results are for **AMZN**, evaluated over **56 trading days (January–March 2026)**,
-using models trained on 2023–2025 data.
+The following results are for **AMZN**, evaluated over **64 trading days (2024-08-02 to 2024-10-31)**,
+using models trained on January 2023 – July 2024 data.
 
-![Performance Overview](docs/figures/performance_overview.png)
-
-### Metrics Comparison (AMZN, Jan–Mar 2026)
+### Metrics Comparison (AMZN, Aug–Oct 2024)
 
 | Metric | No-Sentiment | With-Sentiment |
 |---|---|---|
-| MAE (USD) | 4.85 | 5.20 |
-| RMSE (USD) | 6.13 | 6.31 |
-| MAPE | 2.21% | 2.36% |
-| R² | 0.843 | 0.834 |
-| Direction Accuracy | 39.3% | 41.1% |
-| Strategy Return | −17.2% | −10.7% |
-| Buy-and-Hold Return | −10.2% | −10.2% |
-| Excess Return | −7.0% | −0.5% |
-| Sharpe Ratio | −4.20 | −3.04 |
-| Max Drawdown | −20.3% | −9.8% |
-| Win Rate | 17.6% | 28.6% |
+| MAE (USD) | **3.330** | 3.738 |
+| RMSE (USD) | **4.282** | 4.744 |
+| MAPE | **1.87%** | 2.07% |
+| R² | **0.748** | 0.690 |
+| Directional Accuracy | 43.75% | **51.56%** |
+| Up Precision | 52.94% | **75.00%** |
+| Strategy Return | −1.27% | **+6.69%** |
+| Buy-and-Hold Return | +1.27% | +1.27% |
+| Excess Return | −2.53% | **+5.43%** |
+| Sharpe Ratio | −0.273 | **2.103** |
+| Max Drawdown | −3.57% | −3.52% |
+| Win Rate | 52.94% | **75.00%** |
+| Trade Count | 17 | **12** |
+| Exposure | 26.56% | **18.75%** |
 
-> Both models operated in a bearish window (AMZN fell ~10% Jan–Mar 2026). The with-sentiment model
-> shows a meaningful risk-adjusted advantage: max drawdown is less than half (−9.8% vs −20.3%),
-> Sharpe improves from −4.20 to −3.04, and excess return is near-neutral (−0.5%), suggesting the
-> sentiment signal provides effective downside protection despite marginally lower price accuracy.
-
-To regenerate this figure after retraining:
-
-```bash
-python train.py
-python prediction_validation.py --range 3m
-python generate_readme_figures.py
-```
+> **Key finding — regression vs. trading paradox:** The no-sentiment model has *better* price-level
+> accuracy (lower MAE/RMSE, higher R²), while the sentiment model has *worse* regression but
+> dramatically better trading outcomes. Adding sentiment raises RMSE from 4.28 to 4.74 and drops
+> R² from 0.748 to 0.690 — yet the sentiment strategy returns +6.69% vs −1.27%, with a Sharpe of
+> 2.10 vs −0.27. The mechanism: sentiment improves directional precision on up-moves (75% vs 53%
+> up-precision), enabling fewer but higher-conviction entries (12 trades, 18.75% exposure) versus
+> the no-sentiment model's 17 lower-quality trades. During a moderate bull market (AMZN +1.27%
+> buy-and-hold), selective entry was rewarded with +5.43% excess return.
 
 ## Prerequisites
 
