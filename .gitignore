@@ -24,6 +24,7 @@ training_outputs/
 
 # Ignore generated figures and metrics
 *.png
+!docs/figures/*.png
 metrics.txt
 
 # Ignore temp files

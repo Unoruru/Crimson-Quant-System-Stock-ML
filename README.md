@@ -39,6 +39,42 @@ threshold generate a BUY signal for the next day; all others produce HOLD or SEL
 threshold is stored in `eval_outputs/{tag}/eval_predictions.csv` and read automatically by
 `predict.py` at runtime.
 
+## Results
+
+The following results are for **AMZN**, evaluated over **56 trading days (January–March 2026)**,
+using models trained on 2023–2025 data.
+
+![Performance Overview](docs/figures/performance_overview.png)
+
+### Metrics Comparison (AMZN, Jan–Mar 2026)
+
+| Metric | No-Sentiment | With-Sentiment |
+|---|---|---|
+| MAE (USD) | 4.85 | 5.20 |
+| RMSE (USD) | 6.13 | 6.31 |
+| MAPE | 2.21% | 2.36% |
+| R² | 0.843 | 0.834 |
+| Direction Accuracy | 39.3% | 41.1% |
+| Strategy Return | −17.2% | −10.7% |
+| Buy-and-Hold Return | −10.2% | −10.2% |
+| Excess Return | −7.0% | −0.5% |
+| Sharpe Ratio | −4.20 | −3.04 |
+| Max Drawdown | −20.3% | −9.8% |
+| Win Rate | 17.6% | 28.6% |
+
+> Both models operated in a bearish window (AMZN fell ~10% Jan–Mar 2026). The with-sentiment model
+> shows a meaningful risk-adjusted advantage: max drawdown is less than half (−9.8% vs −20.3%),
+> Sharpe improves from −4.20 to −3.04, and excess return is near-neutral (−0.5%), suggesting the
+> sentiment signal provides effective downside protection despite marginally lower price accuracy.
+
+To regenerate this figure after retraining:
+
+```bash
+python train.py
+python prediction_validation.py --range 3m
+python generate_readme_figures.py
+```
+
 ## Prerequisites
 
 - Python 3.10 or later
