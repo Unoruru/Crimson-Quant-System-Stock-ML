@@ -228,7 +228,6 @@ def run_predict(use_sentiment: bool = True) -> None:
     print(f"   Ticker           : {ticker}")
     print(f"   Checkpoint       : {tag}")
     print(f"   Today's Close    : ${today_close:.2f}  ({today_str})")
-    print(f"   Target Date      : {tomorrow.strftime('%Y-%m-%d')}")
     print(f"   Predicted Close  : ${pred_close:.2f}")
     print(f"   Predicted LogRet : {sign}{pred_logret:.5f}")
     print(f"   Threshold (Q{q_pct}%) : {thr_sign}{threshold:.5f}")
