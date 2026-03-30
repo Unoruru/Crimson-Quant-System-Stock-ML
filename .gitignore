@@ -1,7 +1,3 @@
-# Ignore Claude files
-.claude/
-CLAUDE.md
-
 # Ignore Python bytecode files
 __pycache__/
 
