@@ -44,6 +44,8 @@ threshold is stored in `eval_outputs/{tag}/eval_predictions.csv` and read automa
 The following results are for **AMZN**, evaluated over **64 trading days (2024-08-02 to 2024-10-31)**,
 using models trained on January 2023 – July 2024 data.
 
+<img src="docs/figures/performance_overview.png" alt="Performance Overview" width="600">
+
 ### Metrics Comparison (AMZN, Aug–Oct 2024)
 
 | Metric | No-Sentiment | With-Sentiment |
